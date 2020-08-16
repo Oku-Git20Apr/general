@@ -21,7 +21,7 @@
 
 void sn_cdc (string run_number ) {
   
-  char root_file[200] = "";  sprintf( root_file, "../../root/all/%s.root" , run_number.c_str() );
+  char root_file[200] = "";  sprintf( root_file, "~/root/%s.root" , run_number.c_str() );
 cout<< run_number << "  "<<  root_file << endl;
 cout<<"input file name is " << root_file <<endl;
 
@@ -98,12 +98,12 @@ cout<<"after file open"<<endl;
   }
 
 /////////////////////////////////////////////////////////////////Display
-  c1->Divide(4,5);
+  c[1]->Divide(4,5);
   for(int i=8;i<13;i++){
 	for(int k=0;k<NumOfAngle;k++){
 	h_cdc_wire[4*i+k+1]->Fit(fit[i][k],"0","",400.,600.);
 	double ymax = (h_cdc_wire[4*i+k+1]->GetBinContent(h_cdc_wire[4*i+k+1]->GetMaximumBin()));
-	c1->cd(4*(i-8)+k+1);h_cdc_wire[4*i+k+1]->Draw();fit[i][k]->Draw("same");
+	c[1]->cd(4*(i-8)+k+1);h_cdc_wire[4*i+k+1]->Draw();fit[i][k]->Draw("same");
 	TLine *ly1 = new TLine(400.,0.,400.,0.9*ymax);
 	TLine *ly2 = new TLine(600.,0.,600.,0.9*ymax);
 	TLine *ly3 = new TLine(1050.,0.,1050.,0.9*ymax);
@@ -118,7 +118,6 @@ cout<<"after file open"<<endl;
 	if(yc == 0) yc = 0.5; //when data is empty
 	double Noise = p0*450.;
 	double DummySignal = 0.;
-	double Signal = 0.;
 	for(int b=300;b<525;b++){
 	DummySignal += 2*(h_cdc_wire[4*i+k+1]->GetBinContent(b));
 	}
@@ -135,17 +134,17 @@ cout<<"after file open"<<endl;
 	TLatex *myt = new TLatex(1400,yc,Form("S/N=%.2f",SN));
 	}
 	//listOfLines->Add(myt);
-	myt->SetTextSize(0.1);
-	myt->Draw();
+	//myt->SetTextSize(0.1);
+	//myt->Draw();
 	}
 }
   
-  c2->Divide(4,5);
+  c[2]->Divide(4,5);
   for(int i=13;i<18;i++){
 	for(int k=0;k<NumOfAngle;k++){
     h_cdc_wire[4*i+k+1]->Fit(fit[i][k],"0","",400, 600);
 	double ymax = (h_cdc_wire[4*i+k+1]->GetBinContent(h_cdc_wire[4*i+k+1]->GetMaximumBin()));
-	c2->cd(4*(i-13)+k+1);h_cdc_wire[4*i+k+1]->Draw();fit[i][k]->Draw("same");
+	c[2]->cd(4*(i-13)+k+1);h_cdc_wire[4*i+k+1]->Draw();fit[i][k]->Draw("same");
 	TLine *ly1 = new TLine(400.,0.,400.,0.9*ymax);
 	TLine *ly2 = new TLine(600.,0.,600.,0.9*ymax);
 	TLine *ly3 = new TLine(1050.,0.,1050.,0.9*ymax);
@@ -160,7 +159,6 @@ cout<<"after file open"<<endl;
 	if(yc == 0) yc = 0.5; //when data is empty
 	double Noise = p0*500.;
 	double DummySignal = 0.;
-	double Signal = 0.;
 	for(int b=300;b<525;b++){
 	DummySignal += 2*(h_cdc_wire[4*i+k+1]->GetBinContent(b));
 	}
@@ -177,8 +175,8 @@ cout<<"after file open"<<endl;
 	TLatex *myt = new TLatex(1400,yc,Form("S/N=%.2f",SN));
 	}
 	//listOfLines->Add(myt);
-	myt->SetTextSize(0.1);
-	myt->Draw();
+	//myt->SetTextSize(0.1);
+	//myt->Draw();
 	}
 }
 
