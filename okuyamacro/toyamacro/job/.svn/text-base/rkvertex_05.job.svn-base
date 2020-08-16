@@ -1,0 +1,56 @@
+#!/bin/csh
+
+  set period = 2017_04
+
+  set user_name = `whoami`
+  set base_dir  = `pwd`/../../../
+
+#  foreach run (10246)
+#  foreach run (10246 10247 10248 10249 10250 10251 10252 10253 10254 10255 10256 10257 \
+#               10258 10259 10261 10262 10268 10269 10270 10271 10272 10273 10274 10275 10276 \
+#               10277 10278 10280 10282 10283 10284 10286 10287 10288 10289 10290 10291 10292 \
+#               )
+#               10293 10294 10296 10297 10298 10304 10305 10307 10308 10309 10310 10311 10312 \
+#               10313 10314 10315 10316 10317 10318 10320 10321 10322 10323 10324 10325 10326 \
+#               10327 10342 10345 10346 10347 10348 10350 )
+ foreach run ( `cut -c-95 ${base_dir}/data/run_summary_${period}.txt | grep -i normal | tr 'n' ' ' | awk '{print $2}'` )
+#foreach run (10239)
+#foreach run (10304 10305 10306 10308 10309)
+#foreach run (10247 10248 10249 10250 10251 10252)
+#foreach run (10246)
+
+    set root_dir = ${base_dir}/job/root/RKVertex/${run}/
+    set root_file_base =  RKVertex_${period}_${run} 
+
+cat << EOF >! .rkvertex_05.input
+Universe     = vanilla
+Initialdir   = ${base_dir}/macros/toyamacro/job
+Executable   = ${base_dir}/macros/toyamacro/csh/rkvertex_05.csh
+Arguments    = ${root_dir} ${root_file_base}
++MachineList0 = Machine != "farm14.npex.prv"
++MachineList1 = Machine != "farm30.npex.prv"
++MachineList2 = Machine != "farm31.npex.prv"
++MachineList3 = Machine != "farm2.npex.prv"
++MachineList5 = Machine != "farm3.npex.prv"
++MachineList4 = Machine != "farm5.npex.prv"
++MachineList6 = Machine != "farm6.npex.prv"
++MachineList7 = Machine != "farm9.npex.prv"
++MachineList8 = Machine != "farm12.npex.prv"
++MachineList9 = Machine != "farm4.npex.prv"
++MachineList10= Machine != "farm13.npex.prv"
++MachineList  = MachineList0 && MachineList1 && MachineList2 && MachineList3 && MachineList4 && MachineList5 && MachineList6 && MachineList7 && MachineList8 && MachineList9 && MachineList10
+Requirements = MachineList && ( Arch == "X86_64" ) && (OpSys == "LINUX") && ( Memory > 500 )
+getenv       = True
+notification = Error
+notify_user  = ${user_name}@lambda.phys.tohoku.ac.jp
+Queue
+EOF
+
+        condor_submit .rkvertex_05.input
+
+
+  end
+
+
+
+
