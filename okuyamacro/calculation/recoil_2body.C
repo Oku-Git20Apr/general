@@ -237,6 +237,34 @@ void recoil_2body(){
 	fff30->SetLineStyle(2);
 	fff30->SetLineWidth(3);
 
+//No use
+	TF1 *ffff0 = new TF1("ffff0",eek_mom, 0.01, 9, 1);
+	ffff0->SetRange(eek_lim0,6.);
+	ffff0->SetParameters(0,0);
+	ffff0->SetLineColor(kBlack);
+	ffff0->SetLineStyle(1);
+	ffff0->SetLineWidth(3);
+
+	TF1 *ffff10 = new TF1("ffff10",eek_mom, 0.01, 8.0, 1);
+	ffff10->SetRange(eek_lim10,6.);
+	ffff10->SetParameters(10,0);
+	ffff10->SetLineColor(kBlack);
+	ffff10->SetLineStyle(9);
+	ffff10->SetLineWidth(3);
+
+	TF1 *ffff20 = new TF1("ffff20",eek_mom, 0.01, 7.0, 1);
+	ffff20->SetRange(eek_lim20,6.);
+	ffff20->SetParameters(20,0);
+	ffff20->SetLineColor(kBlack);
+	ffff20->SetLineStyle(7);
+	ffff20->SetLineWidth(3);
+
+	TF1 *ffff30 = new TF1("ffff30",eek_mom, 0.01, 6.0, 1);
+	ffff30->SetRange(eek_lim30,6.);
+	ffff30->SetParameters(30,0);
+	ffff30->SetLineColor(kBlack);
+	ffff30->SetLineStyle(2);
+	ffff30->SetLineWidth(3);
 
 ///////////////////////////////////////////////////drawing hist
 	TH2D *h = new TH2D("h","h",10,0.,2.,10,0,0.71);
@@ -252,15 +280,20 @@ void recoil_2body(){
 	h->GetYaxis()->SetTitleSize(0.05);
 	h->GetYaxis()->SetTitle("Produced #Lambda Momentum [GeV/#it{c}]");
 
-	TLegend *tl = new TLegend(0.20,0.65,0.40,0.85);
+	TLegend *tl = new TLegend(0.20,0.55,0.40,0.85);
     tl->SetTextFont(42);
 	tl->AddEntry(fff0,"(#gamma,K^{+})","l");;
     tl->AddEntry(ff0,"(#pi^{+},K^{+})","l");
     tl->AddEntry(f0,"(K^{-},#pi^{-})","l");
+    tl->AddEntry(ffff0,"0 deg","l");
+    tl->AddEntry(ffff10,"10 deg","l");
+    tl->AddEntry(ffff20,"20 deg","l");
+    tl->AddEntry(ffff30,"30 deg","l");
+    tl->SetBorderSize(0);
 
 
 
-//TCanvas *c = new TCanvas("c","canvas",800,600);
+TCanvas *c = new TCanvas("c","canvas",1000,700);
 //	c->cd();
 	h   -> Draw();
 	f0  -> Draw("same");
@@ -276,5 +309,6 @@ void recoil_2body(){
 	fff20 -> Draw("same");
 	fff30 -> Draw("same");
     tl->Draw("same");
+c->SaveAs("recoil_2body.png");
 
 }
