@@ -8,6 +8,7 @@
 //Moller scattering
 //Bremsstrahlung
 
+double PI = 4.*atan(1.);
 
 //E. Amaldi, S. Fubini, and G. Furlan, Pion Electroproduction. Electroproduction at Low- Energy and Hadron Form-Factors, Vol. 83 of Springer Tracts in Mod. Phys., Springer, Berlin, 1979.
 double vpflux_lab(double *x, double *par){
@@ -127,60 +128,26 @@ if(dif_lab<0.)dif_lab=0.;
 
 //Y. Tsai, "Pair production and bremsstrahlung of charged meson", Rev. Mod. Phys., Vol 46, No4 (1974)
 double brems_lab(double *x, double *par){
-	//double Einc  = 4.523*1000.;//[GeV]
-	//double Escat = 3.030*1000.;//[GeV]
-	double Einc  = 2.344*1000.;//[GeV]
-	double Escat = 0.844*1000.;//[GeV]
+	//double Einc  = 4.523*1000.;//[MeV]
+	//double Escat = 3.030*1000.;//[MeV]
+	double Einc  = 2.344*1000.;//[MeV]
+	double Escat = 0.844*1000.;//[MeV]
 	double Z=par[0];
-//	double Escat = par[0];//[GeV]
+//	double Escat = par[0];//[MeV]
 	double thetaee = x[0];	
-	double Me=pow(511,-3.);//[GeV/c^2]
-	double Mp=0.9382720*1000.;//[GeV/c^2]
+	double Me=pow(511,-3.);//[MeV/c^2]
+	double Mp=0.9382720*1000.;//[MeV/c^2]
 	double pinc = sqrt(Einc*Einc-Me*Me);
 	double pscat = sqrt(Escat*Escat-Me*Me);
-	double sine = pscat*sin(thetaee)/(Einc-Escat);
-	double theta = asin(sine);
+	double theta = asin(pscat*sin(thetaee)/(Einc-Escat));
+//cout<<"theta_ee:theta_k="<<thetaee<<":"<<theta<<endl;
 //cout<<"pscat="<<pscat<<endl;
 //Lorentz transformation
 	double beta = pinc/(Einc+Me);//-->gamma diverges
-	//double beta=0.99;
 	double gamma=1./sqrt(1-beta*beta);
-//cout<<"beta="<<beta<<endl;
+	double omega=Einc-Escat;
 
-	TLorentzVector B_4vec;
-	TLorentzVector T_4vec;
-	TLorentzVector L_4vec;
-	B_4vec.SetPxPyPzE(pinc,0.,0.,Einc);
-	T_4vec.SetPxPyPzE(0.,0.,0.,Me);
-	L_4vec.SetPxPyPzE(pscat*cos(theta),pscat*sin(theta),0.,Escat);
-	TVector3 boost;
-	TLorentzVector BT_4vec;
-	BT_4vec=B_4vec+T_4vec;
-	//boost=BT_4vec.BoostVector();
-	boost.SetXYZ(0.99,0.,0.);
-//cout<<"boost.x="<<boost.X()<<endl;
-//cout<<"boost.y="<<boost.Y()<<endl;
-//cout<<"boost.z="<<boost.Z()<<endl;
-	//L_4vec.Boost(-boost);
-	//B_4vec.Boost(-boost);
-	//theta = L_4vec.Angle(B_4vec.Vect());// -->180 deg (Back-to-back in CM)
-	//theta=L_4vec.Theta();
-//if(fabs(theta-0.2)<0.0001)cout<<"theta="<<theta*180./PI<<endl;
-	//Einc=B_4vec.E();
-	//Escat=L_4vec.E();
-//cout<<"Escat="<<Escat<<endl;
-	pinc=B_4vec.Rho();
-	pscat=L_4vec.Rho();
-
-	double Qsq=2*Einc*Escat*(1-cos(theta));
-	double omega = Einc - Escat;
-	double q2=Qsq+omega*omega;
-	double kg=omega-Qsq/(2*Mp);
-	double eps=1/(1+2*(q2/Qsq)*tan(theta/2)*tan(theta/2));
 	double alpha = 1./137.;
-
-
-//	double Z=6.;//C, Al
 	double y=omega/Einc;
 //if(fabs(theta-0.2)<0.0001)cout<<"y="<<y<<endl;
 	double l=theta*theta*Einc*Einc/Me/Me;
@@ -203,10 +170,10 @@ double brems_lab(double *x, double *par){
 	double X=Z*Z*(log(a*a*Me*Me*(l+1.)*(l+1.)/(a*a*tmin+1.))-1.)+Z*(log(ap*ap*Me*Me*(l+1.)*(l+1.)/(ap*ap*tmin+1.))-1.);
 //if(fabs(theta-0.2)<0.0001)cout<<"X="<<X<<endl;
 //X=-X;
-	double var=alpha*Z*alpha*Z;
+	double var=alpha*Z;
 	double fun=1.202*var-1.0369*var*var+1.008*var*var*var/(1.+var);
 //if(fabs(theta-0.2)<0.0001)cout<<"fun="<<fun<<endl;
-	double dif_lab=(2.*alpha*alpha*alpha*Einc*Einc/(PI*omega*Me*Me*Me*Me))*(b1*G2_infty+b2*(X-2.*Z*Z*fun));
+	double dif_lab=(2.*alpha*alpha*alpha*Einc*Einc/(PI*omega*Me*Me*Me*Me))*(b1*G2_infty+b2*(X-2.*Z*Z*fun*fun));
 	//return dif_lab*400.*0.001*0.001;//[mb/MeV/sr]
 	return dif_lab*400.*1000.;//[mb/MeV/sr]
 
@@ -242,17 +209,17 @@ TF1* func1 = new TF1("func1",brems_lab, 0.001, 0.3,1);
 TF1* func11 = new TF1("func11",brems_lab, 0.001, 0.3,1);
 TF1* func111 = new TF1("func111",brems_lab, 0.001, 0.3,1);
 func1->SetNpx(600000);
-func1->SetParameter(0,12.);
+func1->SetParameter(0,3.);
 func1->SetLineColor(kViolet);
 func1->SetLineWidth(4);
 func1->SetLineStyle(1);
 func11->SetNpx(600000);
-func11->SetParameter(0,40.);
+func11->SetParameter(0,6.);
 func11->SetLineColor(kViolet);
 func11->SetLineWidth(4);
 func11->SetLineStyle(9);
 func111->SetNpx(600000);
-func111->SetParameter(0,208.);
+func111->SetParameter(0,24.);
 func111->SetLineColor(kViolet);
 func111->SetLineWidth(4);
 func111->SetLineStyle(7);
