@@ -1,3 +1,30 @@
+//--------------------------------------------------------------------
+void SetTH1(TH1 *h, TString name, TString xname, TString yname, int LColor=1, int FStyle=0, int FColor=0){
+  h->SetTitle(name);
+  h->SetLineColor(LColor);
+  h->SetLineWidth(0);
+  h->SetTitleSize(0.04,"");
+  h->SetTitleFont(42,"");
+  h->SetFillStyle(FStyle);
+  h->SetFillColor(FColor);
+
+  h->GetXaxis()->SetTitle(xname);
+  h->GetXaxis()->CenterTitle();
+  h->GetXaxis()->SetTitleFont(42);
+  h->GetXaxis()->SetTitleOffset(0.90);
+  h->GetXaxis()->SetTitleSize(0.06);
+  h->GetXaxis()->SetLabelFont(42);
+  h->GetXaxis()->SetLabelOffset(0.01);
+
+  h->GetYaxis()->SetTitle(yname);
+  h->GetYaxis()->CenterTitle();
+  h->GetYaxis()->SetTitleFont(42);
+  h->GetYaxis()->SetTitleOffset(1.00);
+  h->GetYaxis()->SetTitleSize(0.06);
+  h->GetYaxis()->SetLabelFont(42);
+  h->GetYaxis()->SetLabelOffset(0.01);
+  ((TGaxis*)h->GetYaxis())->SetMaxDigits(4);
+}
 void gain_fitting_Left(){
 
   TChain *tree = new TChain("tree");

@@ -629,12 +629,12 @@ cout<<"A6_N8"<<A6_N8<<endl;
 	A4=A4_born+A4_L1+A4_L5+A4_kstar+A4_k1+A4_L3+A4_S1+A4_N7;// +A4_N8
 	A5=A5_born+A5_L1+A5_L5+A5_kstar+A5_k1+A5_L3+A5_S1+A5_N7;// +A5_N8
 	A6=A6_born+A6_L1+A6_L5+A6_kstar+A6_k1+A6_L3+A6_S1+A6_N7;// +A6_N8
-	//A1=A1_N8;
-	//A2=A2_N8;
-	//A3=A3_N8;
-	//A4=A4_N8;
-	//A5=A5_N8;
-	//A6=A6_N8;
+	A1=A1_born;
+	A2=A2_born;
+	A3=A3_born;
+	A4=A4_born;
+	A5=A5_born;
+	A6=A6_born;
 cout<<"A1_all"<<A1<<endl;
 cout<<"A2_all"<<A2<<endl;
 cout<<"A3_all"<<A3<<endl;
