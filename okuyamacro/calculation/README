@@ -1,2 +1,63 @@
-*vpflux_expression (Sep. 7, 2020)
+*vpflux_expression.C (Sep. 7, 2020)
 -comparison of three-type expressions of VP Flux
+
+*ee_bgsource_allArb.C (Nov. 1, 2020)
+-Comparison in Lab frame
+-Bremsstrahlung
+-Moller scat.
+-VP Flux
+
+*brems_moller_vpflux.C (Nov. 1, 2020)
+-Calc. for each
+-Bremsstrahlung
+-Moller scat.
+-VP Flux
+
+*chrenkov2.C
+-Aerogel Cherenkov (for E12-17-003 exp)
+
+*bethe.cpp
+-Bethe-Bloch calc.
+
+*difcs.C
+-Hyperon Elementary Production
+-CLAS, SLA...
+(but, you had better use "strangecalc", instead)
+
+*gevmom_acceptance.C
+-Momentum Acceptance (E12-17-003)
+-GeV
+
+*mom_acceptance.C
+-Momentum Acceptance (E12-17-003)
+-MeV
+
+*plot_bes.C
+-Bessel function
+
+*teff.C
+-TEfficiency
+
+*recoil_2body.C
+-(K-,pi-)
+-(pi+,K+)
+-(gamma,K+)
+-recoil Lambda momentum calc.
+
+*opamp.C
+-impedance calc.
+-for AC depelopment (ELPH)
+
+*impedance.C
+-impedance calc.
+-for AC depelopment (ELPH)
+
+*mass_3D.C
+-Momentum Acceptance
+-Z axis: Missing mass
+
+*kinematics.C
+-E12-17-003 exp. kinematics
+
+*W_Eg.C
+-W vs E_gamma (for electro-production)

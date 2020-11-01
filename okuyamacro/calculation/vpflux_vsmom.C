@@ -11,7 +11,7 @@ double vpflux_doi(double *x, double *par){
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
 
-	double Me=pow(511,-6.);//[GeV/c^2]
+	double Me=511.*pow(10.,-6.);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;
@@ -34,7 +34,7 @@ double vpflux_kawama(double *x, double *par){
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
 
-	double Me=pow(511,-6);//[GeV/c^2]
+	double Me=511.*pow(10.,-6);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;
@@ -54,7 +54,7 @@ double vpflux_lab(double *x, double *par){
 	double Escat = x[0];//[GeV]
 	double theta = par[0];	
 
-	double Me=pow(511,-6.);//[GeV/c^2]
+	double Me=511.*pow(10.,-6.);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;

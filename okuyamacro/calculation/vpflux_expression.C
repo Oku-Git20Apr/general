@@ -14,9 +14,7 @@
 //
 //I reported this result in ELS#94 (July 16, 2020)
 
-
-
-
+const double PI=4.*atan(1.);
 
 //M-thesis(Doi-san & Kawama-san)
 //http://lambda.phys.tohoku.ac.jp/~db/human_resource/thesis/2005_B_2_M_1.pdf (Doi-san)
@@ -26,7 +24,7 @@ double vpflux_doi(double *x, double *par){
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
 
-	double Me=pow(511,-6.);//[GeV/c^2]
+	double Me=511.*pow(10.,-6.);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;
@@ -51,7 +49,7 @@ double vpflux_kawama(double *x, double *par){
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
 
-	double Me=pow(511,-6);//[GeV/c^2]
+	double Me=511.*pow(10.,-6);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;
@@ -74,7 +72,7 @@ double vpflux_lab(double *x, double *par){
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
 
-	double Me=pow(511,-6.);//[GeV/c^2]
+	double Me=511.*pow(10.,-6.);//[GeV/c^2]
 	double Mp=0.9382720;//[GeV/c^2]
 	double Qsq=2*Einc*Escat*(1-cos(theta));
 	double omega = Einc - Escat;
