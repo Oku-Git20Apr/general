@@ -4,7 +4,7 @@ void homework3(){
 
 //	double r = 1.;
   gRandom->SetSeed(0);
-  for(int i=0;i<1E+4;i++){
+  for(int i=0;i<1E+6;i++){
 	double r = pow(3*(gRandom->Uniform(0.,1.)),1/3);
 	double theta = acos( gRandom->Uniform(-1.,1.));
 	double phi = gRandom->Uniform(0.,2.*TMath::Pi());
