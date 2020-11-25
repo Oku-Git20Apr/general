@@ -1,27 +1,64 @@
 #include <TMath.h>
 void test_uniform(){
-  TH3D *h = new TH3D("h","h",100,-1.,1.,100.,-1.,1.,100.,-1.,1.);
-  TH3D *h_cm = new TH3D("h_cm","h_cm",100,-1.,1.,100.,-1.,1.,100.,-1.,1.);
-  TH1D *h_test = new TH1D("h_test","h_test",1000,-4.,4.);
-  TH1D *h_test2 = new TH1D("h_test2","h_test2",1000,-4.,4.);
+  TH3D *h3_test1 = new TH3D("h3_test1","h3_test1",100,-1.,1.,100.,-1.,1.,100.,-1.,1.);
+  TH3D *h3_test2 = new TH3D("h3_test2","h3_test2",100,-1.,1.,100.,-1.,1.,100.,-1.,1.);
+  TH3D *h3_test3 = new TH3D("h3_test3","h3_test3",100,-1.,1.,100.,-1.,1.,100.,-1.,1.);
+  TH1D *h_test1  = new TH1D("h_test1","h_test1",1000,0.,4.);
+  TH1D *h_test2  = new TH1D("h_test2","h_test2",1000,0.,4.);
+  TH1D *h_test3  = new TH1D("h_test3","h_test3",1000,0.,4.);
 //  SetTH1(h,"homework3","x","y");
 
+  double PI = 4.*atan(1.);
+cout<<"PI="<<PI<<endl;
   gRandom->SetSeed(0);
-  int N_cm = 0;
-  int N_lab = 0;
+  int N1 = 0;
+  int N2 = 0;
+  int N3 = 0;
   for(int i=0;i<1E+6;i++){
 
-	double theta_gen = acos( (2.*gRandom->Uniform()-1.)*gRandom->Uniform());
-	double theta_gen2 = acos(gRandom->Uniform());
-    h_test->Fill(theta_gen);
+	double theta_gen1 = acos( -(2.0*gRandom->Uniform()*-1.0)*gRandom->Uniform());//SIMC
+	double theta_gen2 = acos(gRandom->Uniform(-1.,1.));//UNIFORM
+	double theta_gen3 = acos(1.-gRandom->Uniform()*(1.-cos(PI/2.)));//uniform in 0--pi/2 rad
+	double phi_gen = 2.*PI*gRandom->Uniform(0.,1.);
+	double x1 = sin(theta_gen1)*cos(phi_gen);
+	double y1 = sin(theta_gen1)*sin(phi_gen);
+	double z1 = cos(theta_gen1);
+	double x2 = sin(theta_gen2)*cos(phi_gen);
+	double y2 = sin(theta_gen2)*sin(phi_gen);
+	double z2 = cos(theta_gen2);
+	double x3 = sin(theta_gen3)*cos(phi_gen);
+	double y3 = sin(theta_gen3)*sin(phi_gen);
+	double z3 = cos(theta_gen3);
+	h3_test1->Fill(x1,y1,z1);
+	h3_test2->Fill(x2,y2,z2);
+	h3_test3->Fill(x3,y3,z3);
+    h_test1->Fill(theta_gen1);
     h_test2->Fill(theta_gen2);
+    h_test3->Fill(theta_gen3);
+	if(theta_gen1<=0.1)N1++;
+	if(theta_gen2<=0.1)N2++;
+	if(theta_gen3<=0.1)N3++;
 
 	
   }
 
+cout<<"N1="<<N1<<endl;
+cout<<"N2="<<N2<<endl;
+cout<<"N3="<<N3<<endl;
   TCanvas *c1 = new TCanvas("c1","c1",600,600);
   c1->cd();
-  h_test->Draw();
+  h_test1->Scale((double)N2/(double)N1);
+  h_test3->Scale((double)N2/(double)N3);
+  h_test1->Draw();
+  h_test2->SetLineColor(kRed);
+  h_test3->SetLineColor(kGreen);
   h_test2->Draw("same");
+  h_test3->Draw("same");
+//  TCanvas *c2 = new TCanvas("c2","c2",600,600);
+//  h3_test1->Draw("");
+//  TCanvas *c3 = new TCanvas("c3","c3",600,600);
+//  h3_test2->Draw("");
+//  TCanvas *c4 = new TCanvas("c4","c4",600,600);
+//  h3_test3->Draw("");
 
 }
