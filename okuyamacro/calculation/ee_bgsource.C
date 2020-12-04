@@ -38,7 +38,8 @@ if(vpflux<0.)vpflux=0.;
 
 
 double moller_lab(double *x, double *par){
-	double Einc  = 2.344*1000000.;//[GeV]
+	double Einc  = 4.3*1000000.;//[GeV]
+	//double Einc  = 2.344*1000000.;//[GeV]
 	//double Escat = 2.1*1000000.;//[GeV]
 	double Escat = par[0];//[GeV]
 	double theta = x[0];	
@@ -121,6 +122,8 @@ double moller_lab(double *x, double *par){
 //labtocm=1.;
 	double dif_lab =dif_cm/labtocm;
 if(dif_lab<0.)dif_lab=0.;
+if(fabs(Escat-2100000.)>100000.)dif_lab=0.;
+//if(dif_lab==0)cout<<"Escat="<<Escat<<endl;
 	//return dif_lab*0.0004*pow(10.,12.);//[b/sr]
 	return dif_lab*400.*pow(10.,6.);//[b/sr]
 
@@ -232,9 +235,10 @@ cout<<"val_lab"<<func1->Eval(0.2)<<endl;
 TCanvas* c2 = new TCanvas("c2", "c2", 800, 600);
 c2->SetLogy(1);
 c2->SetGrid(1);
-TF1* func2 = new TF1("func2",moller_lab, 0.001, 0.3,1);
+TF1* func2 = new TF1("func2",moller_lab, 0.001, 1.0,1);
 func2->SetNpx(600000);
-func2->SetParameter(0,0.844*1000000);
+//func2->SetParameter(0,0.844*1000000);
+func2->SetParameter(0,2.1*1000000);
 //func2->SetParameter(0,13.);
 //func2->SetParameter(0,100.);
 func2->SetLineColor(kAzure);

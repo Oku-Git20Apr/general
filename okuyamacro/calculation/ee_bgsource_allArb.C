@@ -12,6 +12,7 @@
 //Moller scattering
 //Bremsstrahlung
 
+double PI=4.*atan(1.);
 
 //E. Amaldi, S. Fubini, and G. Furlan, Pion Electroproduction. Electroproduction at Low- Energy and Hadron Form-Factors, Vol. 83 of Springer Tracts in Mod. Phys., Springer, Berlin, 1979.
 double vpflux_lab(double *x, double *par){
@@ -40,6 +41,96 @@ if(vpflux<0.)vpflux=0.;
 }
 
 
+double moller_lab_nnlHRS(double *x, double *par){
+	//double Einc  = 2.344*1000000.;//[keV]
+	double Einc  = 4.319*1000000.;//[keV]
+	//double Escat = 2.1*1000000.;//[keV]
+	double Escat = par[0];//[keV]
+	double theta = x[0];	
+	//double Me=511.*pow(10,-6.);//[keV/c^2]
+	double Me=511.;//[GeV/c^2]
+	double Mp=0.9382720*1000000.;//[keV/c^2]
+	double pinc = sqrt(Einc*Einc-Me*Me);
+	double pscat = sqrt(Escat*Escat-Me*Me);
+//cout<<"pscat="<<pscat<<endl;
+//Lorentz transformation
+	double beta = pinc/(Einc+Me);//-->gamma diverges
+	//double beta=0.99;
+	double gamma=1./sqrt(1.-beta*beta);
+	//double gamma=(Einc+Me)/sqrt((Einc+Me)*(Einc+Me)-pinc*pinc);
+	if(isfinite(gamma));
+	else{
+	cout<<"gamma infinite"<<endl;
+	beta = 0.9999988;//-->gamma diverges
+	gamma= 649.;
+	}
+//cout<<"beta="<<beta<<endl;
+//cout<<"gamma="<<gamma<<endl;
+
+	TLorentzVector B_4vec;
+	TLorentzVector T_4vec;
+	TLorentzVector L_4vec;
+	B_4vec.SetPxPyPzE(0,0.,pinc,Einc);
+//cout<<"B.Mass="<<B_4vec.M()<<endl;
+	T_4vec.SetPxPyPzE(0.,0.,0.,Me);
+	L_4vec.SetPxPyPzE(pscat*sin(theta),0.,pscat*cos(theta),Escat);
+//cout<<"L.Mass="<<L_4vec.M()<<endl;
+//cout<<"L.Mom="<<L_4vec.Rho()<<endl;
+//cout<<"L.px="<<L_4vec.Px()<<endl;
+//cout<<"L.py="<<L_4vec.Py()<<endl;
+//cout<<"L.pz="<<L_4vec.Pz()<<endl;
+	TVector3 boost;
+	TLorentzVector BT_4vec;
+	BT_4vec=B_4vec+T_4vec;
+	boost=BT_4vec.BoostVector();
+	//boost.SetXYZ(0.,0.,beta);
+//cout<<"boost.x="<<boost.X()<<endl;
+//cout<<"boost.y="<<boost.Y()<<endl;
+//cout<<"boost.z="<<boost.Z()<<endl;
+	L_4vec.Boost(-boost);
+//cout<<"after"<<endl;
+//cout<<"L.Mass="<<L_4vec.M()<<endl;
+//cout<<"L.Mom="<<L_4vec.Rho()<<endl;
+//cout<<"L.px="<<L_4vec.Px()<<endl;
+//cout<<"L.py="<<L_4vec.Py()<<endl;
+//cout<<"L.pz="<<L_4vec.Pz()<<endl;
+	B_4vec.Boost(-boost);
+	//theta = L_4vec.Angle(B_4vec.Vect());// -->180 deg (Back-to-back in CM)
+	theta=L_4vec.Theta();
+//cout<<"theta="<<theta<<endl;
+//if(fabs(x[0]-0.8)<0.01)cout<<"theta="<<theta*180./PI<<endl;
+	Einc=B_4vec.E();
+//cout<<"Einc="<<Einc<<endl;
+	Escat=L_4vec.E();
+//cout<<"Escat="<<Escat<<endl;
+//cout<<"Escat="<<gamma*(sqrt(2.3*2.3+Me*Me)-beta*cos(0.23)*2.3)<<endl;
+	pinc=B_4vec.Rho();
+//cout<<"pinc="<<pinc<<endl;
+	pscat=L_4vec.Rho();
+//cout<<"pscat="<<pscat<<endl;
+
+	double Qsq=2*Einc*Escat*(1-cos(theta));
+	double omega = Einc - Escat;
+	double q2=Qsq+omega*omega;
+	double kg=omega-Qsq/(2*Mp);
+	double eps=1/(1+2*(q2/Qsq)*tan(theta/2)*tan(theta/2));
+	double alpha = 1./137.;
+
+	double factor1 = 2*Einc*Einc-Me*Me;
+	double factor2 = Einc*Einc-Me*Me;
+	double dif_cm = ((alpha*alpha*factor1*factor1)/(4*Einc*Einc*factor2*factor2))*(4./pow(sin(theta),4.)-3./pow(sin(theta),2.)+(1.+4./(sin(theta)*sin(theta)))*(factor2*factor2)/(factor1*factor1));
+	//double dif_cm = ((alpha*alpha)/(4*Einc*Einc*pow(pinc*sin(theta),4.)))*(4.*(Me*Me+2.*pinc*pinc)*(Me*Me+2.*pinc*pinc)+(4.*pow(pinc,4.)-3.*(Me*Me+2.*pinc*pinc)*(Me*Me+2.*pinc*pinc))*sin(theta)*sin(theta)+pow(pinc,4.)*pow(sin(theta),4.));
+
+	double labtocm = (gamma*pscat*pscat*(pscat*cos(theta)+beta*Escat))/(pow(sqrt(pscat*pscat*sin(theta)*sin(theta)+gamma*gamma*(pscat*cos(theta)+beta*Escat)*(pscat*cos(theta)+beta*Escat)),3.));
+//cout<<"labtocm="<<labtocm<<endl;
+//labtocm=1.;
+	double dif_lab =dif_cm/labtocm;
+//if(dif_lab<0.)dif_lab=0.;
+if(fabs(Escat-2100000.)>100000.)dif_lab=0.;
+	return dif_lab*400.*pow(10.,6.)*20624/(4.5*pow(10.,7.));//[Arb.]
+	//return dif_cm*400.*pow(10.,6.);//[b/sr] (CM)
+
+}
 double moller_lab(double *x, double *par){
 	//double Einc  = 2.344*1000000.;//[keV]
 	double Einc  = 4.319*1000000.;//[keV]
@@ -199,11 +290,11 @@ gROOT->SetStyle("Plain");
 //h1->GetYaxis()->SetTitle("Differential C.S. [mb/MeV/sr]");
 
 cout<<"f(theta=13.2 degree) is shown:"<<endl;
-TF1* func1 = new TF1("func1",brems_lab, 0.0001, 0.3,1);
-TF1* func11 = new TF1("func11",brems_lab, 0.001, 0.3,1);
-TF1* func111 = new TF1("func111",brems_lab, 0.001, 0.3,1);
-TF1* func1111 = new TF1("func1111",brems_lab, 0.001, 0.3,1);
-func1->SetNpx(600000);
+TF1* func1 = new TF1("func1",brems_lab, 0.0001, 0.35,1);
+TF1* func11 = new TF1("func11",brems_lab, 0.001, 0.35,1);
+TF1* func111 = new TF1("func111",brems_lab, 0.001, 0.35,1);
+TF1* func1111 = new TF1("func1111",brems_lab, 0.001, 0.35,1);
+func1->SetNpx(600);
 func1->SetParameter(0,1.);
 func1->SetLineColor(kCyan);
 func1->SetLineWidth(3);
@@ -251,14 +342,23 @@ func1->SetLineStyle(1);
 //c2->SetLogy(1);
 //c2->SetGrid(1);
 //h2->Draw("");
-TF1* func2 = new TF1("func2",moller_lab, 0.0001, 0.3,1);
-func2->SetNpx(600000);
+TF1* func2_nnl = new TF1("func2_nnl",moller_lab_nnlHRS, 0.0001, 0.35,1);
+func2_nnl->SetNpx(600);
+//func2_nnl->SetParameter(0,0.844*1000000);
+func2_nnl->SetParameter(0,2.1*1000000);
+//func2_nnl->SetParameter(0,13.);
+//func2_nnl->SetParameter(0,100.);
+func2_nnl->SetLineColor(kAzure);
+func2_nnl->SetLineWidth(3);
+TF1* func2 = new TF1("func2",moller_lab, 0.0001, 0.35,1);
+func2->SetNpx(600);
 //func2->SetParameter(0,0.844*1000000);
 func2->SetParameter(0,2.1*1000000);
 //func2->SetParameter(0,13.);
 //func2->SetParameter(0,100.);
 func2->SetLineColor(kAzure);
 func2->SetLineWidth(3);
+func2->SetLineStyle(2);
 //func2->Draw("same");
 //cout<<"val_lab"<<func2->Eval(13.2*PI/180)<<endl;
 //cout<<"val_lab"<<func2->Eval(0.2)<<endl;
@@ -275,8 +375,8 @@ h3->GetYaxis()->SetTitle("VP Flux [#gamma/MeV/sr/electron]");
 c3->SetLogy(1);
 c3->SetGrid(1);
 h3->Draw("");
-TF1* func3 = new TF1("func3",vpflux_lab, 0.0001, 0.3,1);
-func3->SetNpx(600000);
+TF1* func3 = new TF1("func3",vpflux_lab, 0.0001, 0.35,1);
+func3->SetNpx(600);
 func3->SetParameter(0,2.1);
 func3->SetLineColor(kGreen);
 func3->SetLineWidth(3);
@@ -296,6 +396,7 @@ c4->SetLogy(1);
 c4->SetGrid(1);
 h4->Draw("");
 func1->Draw("same");
+func2_nnl->Draw("same");
 func2->Draw("same");
 func3->Draw("same");
 cout<<"log(5)="<<log(5)<<endl;
@@ -303,6 +404,7 @@ cout<<"(8)^(1/3)="<<pow(8.,1./3.)<<endl;
 //c1->Print("brems_calc.pdf");
 //c2->Print("moller_calc.pdf");
 //c3->Print("vpflux_calc.pdf");
+c4->Update();
 c4->Print("ee_bgsource.pdf");
 
 cout<<"Values at 0.001"<<endl;
