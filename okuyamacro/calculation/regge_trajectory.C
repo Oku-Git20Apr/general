@@ -107,7 +107,18 @@ h1->GetYaxis()->SetTitle("#alpha(t)");
 	gPad->SetBottomMargin(0.15);
 c1->Update();
 
+TF1* f_k = new TF1("f_k" ,"[0]*(x-[1])",0.,10.);
+TF1* f_ks= new TF1("f_ks","[0]*(x-[1])+1.",0.,10.);
+f_k->SetParameter(0,0.70);
+f_k->SetParameter(1,0.494*0.494);
+f_k->SetLineColor(kRed);
+f_ks->SetParameter(0,0.85);
+f_ks->SetParameter(1,0.892*0.892);
+f_ks->SetLineColor(kAzure);
+
 gr_kfamily->Draw("Psame");
 gr_ksfamily->Draw("Psame");
+f_k->Draw("same");
+f_ks->Draw("same");
 
 }
