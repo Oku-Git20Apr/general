@@ -1,8 +1,15 @@
+//K. Okuyama (Jan. 10, 2021)
+//Area A <=> func_acpt_b
+//Area B <=> func_acpt_a
+
+
 double mom_acpt(double *x, double *par){
 	const double PI=4.*atan(1.);
 	double x0 = x[0];
 	double MT = par[0];//Target Mass
 	double MM = par[1];//Missing Mass
+	double theta_ee = par[2];
+	double theta_epk = par[3];
 	double MK = 494.;//MeV
 	double Ee = 4312.;//MeV
 	//double cosine = TMath::Cos(0.05);
@@ -10,8 +17,8 @@ double mom_acpt(double *x, double *par){
 	//double cosine2 = TMath::Cos(2.*13.2*PI/180.);
 	//double cosine = TMath::Cos(0.23);
 	//double cosine2 = TMath::Cos(0.46);
-	double cosine = TMath::Cos(0.25);
-	double cosine2 = TMath::Cos(0.50);
+	double cosine = TMath::Cos(theta_ee);
+	double cosine2 = TMath::Cos(theta_epk);
 	double Ex=TMath::Sqrt(x0*x0+MK*MK);
 	//double Qsq=2.*4318.*2200.*(1-cosine);
 	double Qsq=0.476*1000000.;
@@ -43,7 +50,7 @@ double mom_acpt(double *x, double *par){
 
 	}
 
-void mom_acceptance(){
+void mom_acceptance2(){
 gROOT->Reset();
 gROOT->SetStyle("Plain");
 
@@ -73,10 +80,12 @@ double ML=1115.683;
 double MS=1192.642;
 //c1->cd()->DrawFrame(1730,1930,1950,2250);
 c1->cd()->DrawFrame(1720,1940,1980,2220);
-TF1* func_acpt = new TF1("func_acpt",mom_acpt,1700,2000,2);
+TF1* func_acpt = new TF1("func_acpt",mom_acpt,1700,2000,4);
 func_acpt->SetNpx(600);
 func_acpt->SetParameter(0,M);
 func_acpt->SetParameter(1,ML);
+func_acpt->SetParameter(2,0.23);
+func_acpt->SetParameter(3,0.46);
 func_acpt->SetLineColor(kAzure);
 func_acpt->SetLineWidth(4);
 func_acpt->Draw("same");
@@ -89,10 +98,53 @@ cout<<"Lambda(pK=1870)="<<func_acpt->Eval(1870.)<<endl;
 cout<<"Lambda(pK=1860)="<<func_acpt->Eval(1860.)<<endl;
 cout<<"Lambda(pK=1850)="<<func_acpt->Eval(1850.)<<endl;
 cout<<"Lambda(pK=1840)="<<func_acpt->Eval(1840.)<<endl;
-TF1* func_acpt2 = new TF1("func_acpt2",mom_acpt,1700,2000,2);
+TF1* func_acpt_a = new TF1("func_acpt_a",mom_acpt,1700,2000,4);
+func_acpt_a->SetNpx(600);
+func_acpt_a->SetParameter(0,M);
+func_acpt_a->SetParameter(1,ML);
+func_acpt_a->SetParameter(2,0.20);
+func_acpt_a->SetParameter(3,0.40);
+func_acpt_a->SetLineColor(kRed);
+func_acpt_a->SetLineStyle(10);
+func_acpt_a->SetLineWidth(4);
+func_acpt_a->Draw("same");
+cout<<"Lambda_B(pK=1900)="<<func_acpt_a->Eval(1900.)<<endl;
+cout<<"Lambda_B(pK=1914.1)="<<func_acpt_a->Eval(1914.1)<<endl;
+cout<<"Lambda_B(pK=1914.2)="<<func_acpt_a->Eval(1914.2)<<endl;
+cout<<"Lambda_B(pK=1914.3)="<<func_acpt_a->Eval(1914.3)<<endl;
+cout<<"Lambda_B(pK=1914.4)="<<func_acpt_a->Eval(1915.4)<<endl;
+cout<<"Lambda_B(pK=1914.5)="<<func_acpt_a->Eval(1915.5)<<endl;
+TF1* func_acpt_b = new TF1("func_acpt_b",mom_acpt,1700,2000,4);
+func_acpt_b->SetNpx(600);
+func_acpt_b->SetParameter(0,M);
+func_acpt_b->SetParameter(1,ML);
+func_acpt_b->SetParameter(2,0.26);
+func_acpt_b->SetParameter(3,0.52);
+func_acpt_b->SetLineColor(kRed);
+func_acpt_b->SetLineStyle(10);
+func_acpt_b->SetLineWidth(4);
+func_acpt_b->Draw("same");
+cout<<"Lambda_A(pK=1900)="<<func_acpt_b->Eval(1900.)<<endl;
+cout<<"Lambda_A(pK=1881.0)="<<func_acpt_b->Eval(1881.0)<<endl;
+cout<<"Lambda_A(pK=1881.1)="<<func_acpt_b->Eval(1881.1)<<endl;
+cout<<"Lambda_A(pK=1881.2)="<<func_acpt_b->Eval(1881.2)<<endl;
+cout<<"Lambda_A(pK=1881.3)="<<func_acpt_b->Eval(1881.3)<<endl;
+cout<<"Lambda_A(pK=1881.4)="<<func_acpt_b->Eval(1881.4)<<endl;
+cout<<"Lambda_A(pK=1881.5)="<<func_acpt_b->Eval(1881.5)<<endl;
+cout<<"Lambda_A(pK=1881.6)="<<func_acpt_b->Eval(1881.6)<<endl;
+cout<<"Lambda_A(pK=1881.7)="<<func_acpt_b->Eval(1881.7)<<endl;
+cout<<"Lambda_A(pK=1881.8)="<<func_acpt_b->Eval(1881.8)<<endl;
+cout<<"Lambda_A(pK=1881.9)="<<func_acpt_b->Eval(1881.9)<<endl;
+
+
+
+
+TF1* func_acpt2 = new TF1("func_acpt2",mom_acpt,1700,2000,4);
 func_acpt2->SetNpx(600);
 func_acpt2->SetParameter(0,M);
 func_acpt2->SetParameter(1,MS);
+func_acpt2->SetParameter(2,0.23);
+func_acpt2->SetParameter(3,0.46);
 func_acpt2->SetLineColor(kCyan);
 func_acpt2->SetLineWidth(4);
 func_acpt2->Draw("same");
@@ -105,6 +157,48 @@ cout<<"Sigma0(pK=1790)="<<func_acpt2->Eval(1790.)<<endl;
 cout<<"Sigma0(pK=1800)="<<func_acpt2->Eval(1800.)<<endl;
 cout<<"Sigma0(pK=1810)="<<func_acpt2->Eval(1810.)<<endl;
 cout<<"Sigma0(pK=1820)="<<func_acpt2->Eval(1820.)<<endl;
+TF1* func_acpt2_a = new TF1("func_acpt2_a",mom_acpt,1700,2000,4);
+func_acpt2_a->SetNpx(600);
+func_acpt2_a->SetParameter(0,M);
+func_acpt2_a->SetParameter(1,MS);
+func_acpt2_a->SetParameter(2,0.20);
+func_acpt2_a->SetParameter(3,0.40);
+func_acpt2_a->SetLineColor(kRed);
+func_acpt2_a->SetLineWidth(4);
+func_acpt2_a->SetLineStyle(2);
+func_acpt2_a->Draw("same");
+cout<<"Sigma0_B(pK=1760)="<<func_acpt2_a->Eval(1760.)<<endl;
+cout<<"Sigma0_B(pK=1778.0)="<<func_acpt2_a->Eval(1778.0)<<endl;
+cout<<"Sigma0_B(pK=1778.1)="<<func_acpt2_a->Eval(1778.1)<<endl;
+cout<<"Sigma0_B(pK=1778.2)="<<func_acpt2_a->Eval(1778.2)<<endl;
+cout<<"Sigma0_B(pK=1778.3)="<<func_acpt2_a->Eval(1778.3)<<endl;
+cout<<"Sigma0_B(pK=1778.4)="<<func_acpt2_a->Eval(1778.4)<<endl;
+cout<<"Sigma0_B(pK=1778.5)="<<func_acpt2_a->Eval(1778.5)<<endl;
+cout<<"Sigma0_B(pK=1778.6)="<<func_acpt2_a->Eval(1778.6)<<endl;
+cout<<"Sigma0_B(pK=1778.7)="<<func_acpt2_a->Eval(1778.7)<<endl;
+cout<<"Sigma0_B(pK=1778.8)="<<func_acpt2_a->Eval(1778.8)<<endl;
+cout<<"Sigma0_B(pK=1778.9)="<<func_acpt2_a->Eval(1778.9)<<endl;
+TF1* func_acpt2_b = new TF1("func_acpt2_b",mom_acpt,1700,2000,4);
+func_acpt2_b->SetNpx(600);
+func_acpt2_b->SetParameter(0,M);
+func_acpt2_b->SetParameter(1,MS);
+func_acpt2_b->SetParameter(2,0.26);
+func_acpt2_b->SetParameter(3,0.52);
+func_acpt2_b->SetLineColor(kRed);
+func_acpt2_b->SetLineWidth(4);
+func_acpt2_b->SetLineStyle(2);
+func_acpt2_b->Draw("same");
+cout<<"Sigma0_A(pK=1760)="<<func_acpt2_b->Eval(1760.)<<endl;
+cout<<"Sigma0_A(pK=1735.0)="<<func_acpt2_b->Eval(1735.0)<<endl;
+cout<<"Sigma0_A(pK=1735.1)="<<func_acpt2_b->Eval(1735.1)<<endl;
+cout<<"Sigma0_A(pK=1735.2)="<<func_acpt2_b->Eval(1735.2)<<endl;
+cout<<"Sigma0_A(pK=1735.3)="<<func_acpt2_b->Eval(1735.3)<<endl;
+cout<<"Sigma0_A(pK=1735.4)="<<func_acpt2_b->Eval(1735.4)<<endl;
+cout<<"Sigma0_A(pK=1735.5)="<<func_acpt2_b->Eval(1735.5)<<endl;
+cout<<"Sigma0_A(pK=1735.6)="<<func_acpt2_b->Eval(1735.6)<<endl;
+cout<<"Sigma0_A(pK=1735.7)="<<func_acpt2_b->Eval(1735.7)<<endl;
+cout<<"Sigma0_A(pK=1735.8)="<<func_acpt2_b->Eval(1735.8)<<endl;
+cout<<"Sigma0_A(pK=1735.9)="<<func_acpt2_b->Eval(1735.9)<<endl;
 
 TLine *tl1, *tl2, *tl3, *tl4;
 tl1 = new TLine(1760.,2010.,1760.,2160.);

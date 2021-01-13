@@ -4,6 +4,7 @@ double sqrt_func(double *x, double *par){
 
 	return TMath::Sqrt(TMath::Power(x0,2.)+TMath::Power(mass,2.))/x0;
 }
+const double PI=4.*atan(1.);
 
 double vpflux_doi(double *x, double *par){
 	double Einc  = 4.3;//[GeV]
@@ -108,11 +109,22 @@ h1->GetYaxis()->SetTitle("vpflux [/GeV/sr]");
 
 TF1* func3 = new TF1("func3",vpflux_lab, 2.0, 2.2,1);
 func3->SetNpx(600);
-func3->SetParameter(0,0.225);
+func3->SetParameter(0,0.26);
 func3->SetLineColor(kAzure);
 func3->SetLineWidth(4);
 func3->Draw("same");
 cout<<"val_lab"<<func3->Eval(2.1)<<endl;
+//Lambda
+cout<<"val_lab(pe'=2075.62)"<<func3->Eval(2.07562)<<endl;
+cout<<"val_lab(pe'=2092.55)"<<func3->Eval(2.09255)<<endl;
+cout<<"val_lab(pe'=2105.81)"<<func3->Eval(2.10581)<<endl;
+//Sigma0
+//cout<<"val_lab(pe'=2087.17)"<<func3->Eval(2.08717)<<endl;
+//cout<<"val_lab(pe'=2108.39)"<<func3->Eval(2.10839)<<endl;
+//cout<<"val_lab(pe'=2125.47)"<<func3->Eval(2.12547)<<endl;
+//
+//
+//
 //TF1* func2 = new TF1("func2",sqrt_func, 200., 1400.,1);
 //func2->SetNpx(600);
 //func2->SetParameter(0,139);

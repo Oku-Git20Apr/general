@@ -4,6 +4,7 @@ double sqrt_func(double *x, double *par){
 
 	return TMath::Sqrt(TMath::Power(x0,2.)+TMath::Power(mass,2.))/x0;
 }
+const double PI=4.*atan(1.);
 
 double vpflux_doi(double *x, double *par){
 	double Einc  = 4.3;//[GeV]
