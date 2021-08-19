@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <string>
+#include <numeric>//for accumulate()
 using namespace std;
 
 #include "TApplication.h"

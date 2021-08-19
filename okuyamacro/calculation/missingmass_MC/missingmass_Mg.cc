@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <string>
+#include <numeric>//for accumulate()
 using namespace std;
 
 #include "TApplication.h"
@@ -316,8 +317,8 @@ int main(int argc, char** argv){
   gRandom->SetSeed(0);
 
 // Inputs
-  double E_beam     = 4318;  // 4240 2344 4318
-  double M_target   = Mp; // t: 2808.921 C12:11174.864  Ca40:37214.521  Ca48:44657.300
+  double E_beam     = 4240;  // 4240 2344 4318
+  double M_target   = 25133.144;// t: 2808.921 C12:11174.864  Ca40:37214.521  Ca48:44657.300 Al27:25133.144
 // CS from M. Iodice et al., Phys. Rev. Lett. 99 (2007), 052501.
 //  double Ex[11] = {0.00, 0.14, 2.67, 5.74, 5.85, 10.48, 10.52, 10.98, 11.05, 12.95, 13.05};
 //  double CS[11] = {1.02, 3.66, 1.54, 0.58, 0.18,  0.24,  0.12,  1.43,  2.19,  0.91,  0.27};
@@ -329,22 +330,26 @@ int main(int argc, char** argv){
 //  double Ex[1] = {  0.0};
 //  double CS[1] = {   1.};
 // CS P.Bydzovsky NPA881(2012)119. T.Motoba PTPS185(2010)224.
-  double Ex[30] = {-18.1, -18.0, -10.9, -10.8, -10.7, -7.0, -3.0, -3.1,  -3.2, -2.5, 4.0,  4.4,  4.8, -14.8, -8.3, -8.2, -0.8, -12.8, -11.8, -5.8, -4.5,  2, 3};
-  double CS[30] = { 13.7,  41.0,   8.1,  15.3,  90.8,  5.0, 30.2, 27.2, 108.1, 47.1, 50.6, 36.9, 86.3, 53.0, 11.2, 33.3,  5.2,    10,    10,   30,   30, 60,60};
+//  double Ex[30] = {-18.1, -18.0, -10.9, -10.8, -10.7, -7.0, -3.0, -3.1,  -3.2, -2.5, 4.0,  4.4,  4.8, -14.8, -8.3, -8.2, -0.8, -12.8, -11.8, -5.8, -4.5,  2, 3};
+//  double CS[30] = { 13.7,  41.0,   8.1,  15.3,  90.8,  5.0, 30.2, 27.2, 108.1, 47.1, 50.6, 36.9, 86.3, 53.0, 11.2, 33.3,  5.2,    10,    10,   30,   30, 60,60};
+// CS from 28Si(e,e'K+)28LAl 2021/8/18
+//					1/2+(s)  1/2-,3/2-(p) 125 nb/sr -> divided by three.
+  double Ex[4] = { -16.3 , -6.3 ,  -3.3 ,  -0.8};
+  double CS[4] = {  79.0,  41.0 ,  41.0 ,  41.0};
   int    CS_num = sizeof(CS)/sizeof(CS[0]);
   double CS_sum = accumulate(CS, CS + CS_num, 0.0f);
-  double P_scat     = 2100;  // 2740  844  2100
-  double Theta_scat = 13.2 * PI/180.;
+  double P_scat     = 2740;  // 2740  844  2100
+  double Theta_scat = 6.5 * PI/180.;
   double Phi_scat   = 0.0 * PI/180.;
-  double Theta_K    = 13.2 * PI/180.;
+  double Theta_K    = 11.5 * PI/180.;
   double Phi_K      = 180.0 * PI/180.;
-  double M_hyper    = ML; // nnL:2992.227 B12L:11356.861  K40L:37382.452  K48L:44832.515
+  double M_hyper    = 25318.694; // nnL:2992.227 B12L:11356.861  K40L:37382.452  K48L:44832.515 Mg27L:25318.694
                                                        // E05  E12-15
   double Ereso_beam     = 1.8 * 1E-4 * fwhm_to_sigma;  // 1.0  1.0
   double Preso_scat     = 1.0 * 1E-4 * fwhm_to_sigma;  // 4.2  2.0
   double Thetareso_scat = 1.5 * 1E-3;                  // 0.5  0.4  // rad
   double Phireso_scat   = 0.5 * 1E-3;                  // 1.0  0.4  // rad
-  double Preso_K        = 1.0 * 1E-4 * fwhm_to_sigma;  // 2.0  2.0
+  double Preso_K        = 2.0 * 1E-4 * fwhm_to_sigma;  // 2.0  2.0
   double Thetareso_K    = 1.5 * 1E-3;                  // 0.4  0.4  // rad
   double Phireso_K      = 0.5 * 1E-3;                  // 1.0  0.4  // rad
 
@@ -356,18 +361,18 @@ int main(int argc, char** argv){
   //int Acc  = roop * 0.; // 37    3.7
   //int QF   = roop * 50.;  // (50) 2.0% sticking
   int QF   = roop * 30.;  // (50) 2.0% sticking
-  //int Acc  = roop * 3.7; // 37    3.7
+  int Acc  = roop * 3.7; // 37    3.7
   //int Acc  = roop * 1.0; // 37    3.7
-  int Acc  = 4170; //akiyama
+  //int Acc  = 4170; //akiyama
 
   //TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",700,-40,100);
   //TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",700,-40,100);
   //TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",700,-40,100);
   //TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,700,-40,100);
-  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",200,-30,10);
-  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",200,-30,10);
-  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",200,-30,10);
-  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,200,-30,10);
+  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",200,-20,20);
+  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",200,-20,20);
+  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",200,-20,20);
+  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,200,-20,20);
   SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kAzure,1,3004,kAzure);
   SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kRed,1,3004,kRed);
   SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kGreen ,1,1001,kGreen);
