@@ -143,11 +143,16 @@ double mm_rand(double mn)
 	te0   = acos(1.-gRandom->Uniform()*(1.-cos(8.7*pi/180.)));//rad
 	tk0   = acos(1.-gRandom->Uniform()*(1.-cos(14.1*pi/180.)));//rad
 	}
-	double dEe  = Ee0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
-	double dpep = pep0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
-	double dpk	= pk0*(0.0002/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
-	double dte  = (0.0006/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
-	double dtk  = (0.0002/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
+	//double dEe  = Ee0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
+	//double dpep = pep0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
+	//double dpk	= pk0*(0.0002/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
+	//double dte  = (0.0006/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
+	//double dtk  = (0.0002/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
+	double dEe  = gRandom->Gaus(0.,Ee0*(0.0001/2.35));//MeV/c
+	double dpep = gRandom->Gaus(0.,pep0*(0.0001/2.35));//MeV/c
+	double dpk	= gRandom->Gaus(0.,pk0*(0.0002/2.35));//MeV/c
+	double dte  = gRandom->Gaus(0.,(0.0006/2.35));//rad
+	double dtk  = gRandom->Gaus(0.,(0.0002/2.35));//rad
 	double tek0  = te0 + tk0;//rad
  //cout<<"Ee0="<<Ee0<<", pep0="<<pep0<<", pk0="<<pk0<<", te0="<<te0<<", tk0="<<tk0<<", tek0="<<tek0<<endl;
 	//dEe = 0.;

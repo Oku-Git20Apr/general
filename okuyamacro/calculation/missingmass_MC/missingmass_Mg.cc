@@ -41,13 +41,14 @@ using namespace std;
 #include "TDatime.h"
 #include "TMarker.h"
 #include "TRandom.h"
+#include "Math/Integrator.h"
 
 static const double PI = 4.*atan(1.);
-static const double deg_to_rad = PI / 180.;
-static const double rad_to_deg = 180. / PI;
-static const double sigma_to_fwhm = 2.*sqrt(2.*log(2.));
-static const double fwhm_to_sigma = 1./sigma_to_fwhm;
-static const double cm_to_barn = 1e+24;
+static const double deg_to_rad = PI / 180.;//degree -> radian
+static const double rad_to_deg = 180. / PI;//radian -> degree
+static const double sigma_to_fwhm = 2.*sqrt(2.*log(2.));//sigma -> FWHM
+static const double fwhm_to_sigma = 1./sigma_to_fwhm;//FWHM -> sigma
+static const double cm_to_barn = 1e+24;// cm^2 --> b
 static const double alpha = 1./137.035999074; // fine structure constant
 static const double hbar = 6.58211928*1e-22;  // Planc constant (reduced) (MeV x s)
 static const double hbarc = 197.3269718;      // conversion constant (MeV x fm)
@@ -79,7 +80,8 @@ double land(double *x, double *par){
   return val;
 }
 
-double dEdx(double Delta, double thick){ // dE, target thick
+//Leo: Landau's theory
+double dEdx(double Delta, double thick, double Minc, double mom){ // dE, target thick
   gErrorIgnoreLevel = kError;
 
   double cons = 2.*PI*Na*re*re*Me;
@@ -87,7 +89,7 @@ double dEdx(double Delta, double thick){ // dE, target thick
 //  double thick = 0.1;  // thickness (cm)
   double Z = 1;                 // atomic number of absorbing material
   double A = 1;               // atomic weight of absorbing material
-  double M = Mpi;               // incident particle mass (MeV/c2)
+  double M = Minc;               // incident particle mass (MeV/c2)
   double z = 1.;                // charge of incident particle
 //  double ss = Me/M;
   double delta;                          // density correction
@@ -103,7 +105,7 @@ double dEdx(double Delta, double thick){ // dE, target thick
   C0 = - (2. * log(I/(2.*PI) / hbar / mup) + 1.); // MeV
   a = 0.1;
   m = 3.0;
-  int tar = 1; // C:1, Ca40:2, Scin:3
+  int tar = 4; // C:1, Ca40:2, Scin:3, Al:4
   switch(tar){
   case 1:  // C
     ro = 1.80;  Z = 6;  A = 12.011;
@@ -125,6 +127,13 @@ double dEdx(double Delta, double thick){ // dE, target thick
     a = 0.1610;  m = 3.24;
     X1 = 2.49;  X0 = 0.1464;
     break;
+  case 4: // Al (Ref. Leo text)
+    ro = 2.699;  Z = 13;  A = 27;
+    Ne = Na * ro * Z / A;  mup = sqrt(80.617 * 1e+6 * Ne);
+    I = 166.0 * 1e-6;  C0 = -4.24;
+    a = 0.0802;  m = 3.63;
+    X1 = 3.01;  X0 = 0.1708;
+    break;
   default:
     std::cout<<"unknown target! break!"<<std::endl;
     break;
@@ -132,7 +141,7 @@ double dEdx(double Delta, double thick){ // dE, target thick
 
   double Fai;
 
-  double p = 1330.;
+  double p = mom;//momentum
   double beta = p / sqrt(p*p + M*M);
   double gamma = sqrt(p*p + M*M) / M;
   double eta = p / M;
@@ -148,22 +157,22 @@ double dEdx(double Delta, double thick){ // dE, target thick
   if(eta<0.1) C = 0;
   else C = (0.422377*pow(eta,-2) + 0.0304043*pow(eta,-4) - 0.00038106*pow(eta,-6)) * 1e-6 * pow(I*1e+6,2)
           +(3.850190*pow(eta,-2) - 0.1667989*pow(eta,-4) + 0.00159755*pow(eta,-6)) * 1e-9 * pow(I*1e+6,3);
-  double Delta_b = nonrela * thick;
+  double Delta_b = nonrela * thick;//bar{Delta}
 
-  double LnEps = log((1.-beta*beta)*I*I / (2.*Me*beta*beta)) + beta*beta;
-  double Xi = Delta_b * (log(Delta_b) - LnEps + 0.198 -delta);
+  double LnEps = log((1.-beta*beta)*I*I / (2.*Me*beta*beta)) + beta*beta;//ln(epx)
+  double Xi = Delta_b * (log(Delta_b) - LnEps + 0.198 -delta);//Delta_mp
 
   TF1 *f;
 
-  double Lambda = 1./Delta_b * (Xi - Delta_b * (log(Delta_b)- LnEps + 1. - 0.577));
+  double Lambda = 1./Delta_b * (Xi - Delta_b * (log(Delta_b)- LnEps + 1. - 0.577));//lambda
   if(Lambda<-4) Fai = 0;
   else{
     f = new TF1("f",land,0,1e+4,1);
     f->SetParameter(0,Lambda);
-    Fai = f->Integral(0,1e+2,1e-14) / PI;
+    Fai = f->Integral(0,1e+2,1e-6) / PI;//varphi(lambda)
     f->Clear();
   }
-  double Func_max = Fai / Delta_b;
+  double Func_max = Fai / Delta_b;//f(thick,dE)
 
 
   Lambda = 1./Delta_b * (Delta - Delta_b * (log(Delta_b)- LnEps + 1. - 0.577));
@@ -171,49 +180,17 @@ double dEdx(double Delta, double thick){ // dE, target thick
   else{
     f = new TF1("f",land,0,1e+4,1);
     f->SetParameter(0,Lambda);
-    Fai = f->Integral(0,1e+2,1e-14) / PI;
+    Fai = f->Integral(0,1e+2,1e-6) / PI;
     f->Clear();
   }
 
-  double Func = Fai / Delta_b;
+  double Func = Fai / Delta_b;//
 //  cout<<Delta<<"  "<<Xi<<"  "<<Func_max<<"  "<<Func<<endl;
-  Func /= Func_max;
+//  Func /= Func_max;
 
   return Func;
 }
 
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//void SetTH1(TH1 *h, TString name, TString xname, TString yname, int LColor=1, int FStyle=0, int FColor=0){
-//  h->SetTitle(name);
-//  h->SetLineColor(LColor);
-//  h->SetLineWidth(1);
-//  h->SetTitleSize(0.04,"");
-//  h->SetTitleFont(42,"");
-//  h->SetFillStyle(FStyle);
-//  h->SetFillColor(FColor);
-//
-//  h->GetXaxis()->SetTitle(xname);
-//  h->GetXaxis()->CenterTitle();
-//  h->GetXaxis()->SetTitleFont(42);
-//  h->GetXaxis()->SetTitleOffset(0.90);
-//  h->GetXaxis()->SetTitleSize(0.06);
-//  h->GetXaxis()->SetLabelFont(42);
-//  h->GetXaxis()->SetLabelOffset(0.01);
-//  h->GetXaxis()->SetLabelSize(0.045);
-//
-//  h->GetYaxis()->SetTitle(yname);
-//  h->GetYaxis()->CenterTitle();
-//  h->GetYaxis()->SetTitleFont(42);
-//  h->GetYaxis()->SetTitleOffset(1.20);
-//  h->GetYaxis()->SetTitleSize(0.06);
-//  h->GetYaxis()->SetLabelFont(42);
-//  h->GetYaxis()->SetLabelOffset(0.01);
-//  h->GetYaxis()->SetLabelSize(0.045);
-//  ((TGaxis*)h->GetYaxis())->SetMaxDigits(4);
-//}
-//
-//____________________________________________________________________________________________
 void SetTH1(TH1 *h, TString hname, TString xname, TString yname, int LColor, int LStyle, int FStyle, int FColor){
   h->SetTitle(hname);
   h->SetLineColor(LColor);
@@ -315,6 +292,7 @@ int main(int argc, char** argv){
   gStyle->SetPadBottomMargin(0.15);
   TApplication theApp("App", &argc, argv);
   gRandom->SetSeed(0);
+ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6); 
 
 // Inputs
   double E_beam     = 4240;  // 4240 2344 4318
@@ -338,6 +316,7 @@ int main(int argc, char** argv){
   double CS[4] = {  79.0,  41.0 ,  41.0 ,  41.0};
   int    CS_num = sizeof(CS)/sizeof(CS[0]);
   double CS_sum = accumulate(CS, CS + CS_num, 0.0f);
+cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
   double P_scat     = 2740;  // 2740  844  2100
   double Theta_scat = 6.5 * PI/180.;
   double Phi_scat   = 0.0 * PI/180.;
@@ -345,23 +324,30 @@ int main(int argc, char** argv){
   double Phi_K      = 180.0 * PI/180.;
   double M_hyper    = 25318.694; // nnL:2992.227 B12L:11356.861  K40L:37382.452  K48L:44832.515 Mg27L:25318.694
                                                        // E05  E12-15
-  double Ereso_beam     = 1.8 * 1E-4 * fwhm_to_sigma;  // 1.0  1.0
+  double Ereso_beam     = 1.0 * 1E-4 * fwhm_to_sigma;  // 1.0  1.0
   double Preso_scat     = 1.0 * 1E-4 * fwhm_to_sigma;  // 4.2  2.0
-  double Thetareso_scat = 1.5 * 1E-3;                  // 0.5  0.4  // rad
-  double Phireso_scat   = 0.5 * 1E-3;                  // 1.0  0.4  // rad
+  double Thetareso_scat = 0.6 * 1E-3 * fwhm_to_sigma;                  // 0.5  0.4  // rad
+  double Phireso_scat   = 0.4 * 1E-3;                  // 1.0  0.4  // rad
   double Preso_K        = 2.0 * 1E-4 * fwhm_to_sigma;  // 2.0  2.0
-  double Thetareso_K    = 1.5 * 1E-3;                  // 0.4  0.4  // rad
-  double Phireso_K      = 0.5 * 1E-3;                  // 1.0  0.4  // rad
+  double Thetareso_K    = 0.2 * 1E-3 * fwhm_to_sigma;                  // 0.4  0.4  // rad  ~dY'
+  double Phireso_K      = 0.4 * 1E-3;                  // 1.0  0.4  // rad  ~dX'
 
-  double thick = 0.05;  // target thickness in cm
+  double thick = 0.037;  // target thickness in cm (0.05cm = 500um)
                          // E05  E12-15
   //int roop = 100000;       // 1800  800
-  int roop = 13000;       // 1800  800
+  int roop = 314.5;       // 1800  800
   //int QF   = roop * 0.;  // (50) 2.0% sticking
   //int Acc  = roop * 0.; // 37    3.7
   //int QF   = roop * 50.;  // (50) 2.0% sticking
   int QF   = roop * 30.;  // (50) 2.0% sticking
-  int Acc  = roop * 3.7; // 37    3.7
+  //int Acc  = roop * 3.7; // 37    3.7
+  double rate_e = 16.*1000.;//Hz
+  double rate_k_e05 = 170.;//Hz (E05-115:Carbon, 7.78msr, 87.5mg/cm2, 38uA)
+  double rate_k = rate_k_e05 * (4.0/7.78) * (100./87.5) * (20./38.) * (pow(27.,0.8)/pow(12.,0.8));//dOmega,Nt,Ie,A^(0.8)
+  double rate_acc = rate_e * rate_k * 2.0E-9;//Hz
+cout<<"Accidnetal Rete = "<<rate_acc<<" [Hz]"<<endl;
+  int Acc  = roop * (int)(3.6*1.0E-3/rate_acc); //okuyama
+cout<<"Acc = "<<Acc<<endl;
   //int Acc  = roop * 1.0; // 37    3.7
   //int Acc  = 4170; //akiyama
 
@@ -369,14 +355,14 @@ int main(int argc, char** argv){
   //TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",700,-40,100);
   //TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",700,-40,100);
   //TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,700,-40,100);
-  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",200,-20,20);
-  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",200,-20,20);
-  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",200,-20,20);
-  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,200,-20,20);
-  SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kAzure,1,3004,kAzure);
-  SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kRed,1,3004,kRed);
-  SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kGreen ,1,1001,kGreen);
-  SetTH1(h1_mm    ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kAzure ,1,3004,kAzure);
+  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",400,-20,20);
+  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",400,-20,20);
+  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",400,-20,20);
+  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,400,-20,20);
+  SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kAzure,1,3004,kAzure);
+  SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kRed,1,3004,kRed);
+  SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kGreen ,1,1001,kGreen);
+  SetTH1(h1_mm    ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kAzure ,1,3004,kAzure);
   //SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,3004,kPink  +7);
   //SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,3004,kViolet+7);
   //SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,1001,kBlack   );
@@ -389,12 +375,14 @@ int main(int argc, char** argv){
   //SetTH1(h1_mm_q,"","-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2MeV/#it{c}^{2})",1,3003,4);
   //SetTH1(h1_mm_a,"","-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2MeV/#it{c}^{2})",1);
   //SetTH1(h1_mm  ,"","-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2MeV/#it{c}^{2})");
-  h1_mm->SetStats(kFALSE);
+  //h1_mm->SetStats(kFALSE);
+  h1_mm->SetStats(1111);
   h1_mm->SetMarkerStyle(20);
   h1_mm->SetMarkerSize(0.8);
 
   int gs_num = 0;
   for(int n=0;n<roop;n++){
+if(n%500==0){cout<<n<<"/"<<roop<<endl;}
 // electron beam
     double M1     = Me;
     double E1     = E_beam;
@@ -406,17 +394,21 @@ int main(int argc, char** argv){
     TLorentzVector lp1(p1,E1);
 
 // target
+
+//-- State Selection --//
     double Y = gRandom->Uniform(0,CS_sum);
     int peak_num = 0;
     for(int i=0;i<CS_sum;i++){
       double yy = accumulate(CS, CS + (i+1), 0.0f);
       if(Y<yy){
-        if(i==0){ gs_num++; cout<<n<<"  "<<gs_num<<endl; }
+        if(i==0){ gs_num++;} //cout<<n<<"  "<<gs_num<<endl; }
         //if(i==0 || i==1){ gs_num++; cout<<n<<"  "<<gs_num<<endl; }
         break;
       }
       peak_num += 1;
     }
+//---------------------//
+
     double M2     = M_target;
     double P2     = 0.;
     double E2     = p2E(M2,P2);
@@ -483,13 +475,16 @@ int main(int argc, char** argv){
     double Z = gRandom->Uniform(0,thick);
     double y, yy, dE = 0.;
 //    double dE_max = 3.0;
-    double y_max = 20.0;
-#if 0
+    double y_max = 0.1;
+#if 1
     while(1){
       y = gRandom->Uniform(0,y_max);
-      dE = gRandom->Uniform(0,Z*5.);
-      yy = dEdx(dE,Z);
-      if(y<yy){ cout<<Form("e- %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl; break; }
+      dE = gRandom->Uniform(0,1.);//0-1 MeV
+      yy = dEdx(dE,Z,Me,P1);
+      if(y<yy){ 
+		//cout<<Form("e- %04d  dE [MeV], yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
+		 break; }
+	  if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     E1    -= dE;
@@ -501,12 +496,16 @@ int main(int argc, char** argv){
     lp1.SetVect(p1);
     lp1.SetE(E1);
 
-#if 0
+#if 1
     while(1){
       y = gRandom->Uniform(0,y_max);
-      dE = gRandom->Uniform(0,(thick-Z)*5.);
-      yy = dEdx(dE,thick-Z);
-      if(y<yy){ cout<<Form("ep %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl; break; }
+      //dE = gRandom->Uniform(0,(thick-Z)*5.);
+      dE = gRandom->Uniform(0,1.);
+      yy = dEdx(dE,thick-Z,Me,P3);
+      if(y<yy){
+		// cout<<Form("ep %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
+		 break; }
+	  if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     P3     += gRandom->Gaus(0,P_scat*Preso_scat);
@@ -519,12 +518,16 @@ int main(int argc, char** argv){
     lp3.SetVect(p3);
     lp3.SetE(E3);
 
-#if 0
+#if 1
     while(1){
       y = gRandom->Uniform(0,y_max);
-      dE = gRandom->Uniform(0,(thick-Z)*5.);
-      yy = dEdx(dE,thick-Z);
-      if(y<yy){ cout<<Form("K+ %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl; break; }
+      //dE = gRandom->Uniform(0,(thick-Z)*5.);
+      dE = gRandom->Uniform(0,1.);
+      yy = dEdx(dE,thick-Z,MK,P5);
+      if(y<yy){ 
+	//	cout<<Form("K+ %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
+		 break; }
+	  if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     P5     += gRandom->Gaus(0,P5*Preso_K);
@@ -568,12 +571,12 @@ int main(int argc, char** argv){
   h1_mm->Add(h1_mm_p);
   h1_mm->Add(h1_mm_q);
   h1_mm->Add(h1_mm_a);
-#if 1
-  for(int n=0;n<Acc*99;n++){
-    double mass = gRandom->Uniform(-100,100);
-    //h1_mm_a->Fill(mass);
-  }
-#endif
+//#if 1
+//  for(int n=0;n<Acc*99;n++){
+//    double mass = gRandom->Uniform(-100,100);
+//    //h1_mm_a->Fill(mass);
+//  }
+//#endif
 
  TF1 *f_mm = new TF1("f_mm","gaus",-10,10);
 // SetTF1(f_mm);
@@ -584,17 +587,19 @@ int main(int argc, char** argv){
   TCanvas *c1 = new TCanvas("c1","c1",800,600);
   c1->Divide(1,1,1E-4,1E-4);
   c1->cd(1);
+  //c1->cd(1)->DrawFrame(-20.,0.,20.,1E+4);
     //h1_mm->Draw("E");
-    h1_mm->Draw("");
+    h1_mm->Draw("E");
     //h1_mm->GetXaxis()->SetRangeUser(-25,10);
     //h1_mm->GetXaxis()->SetRangeUser(-30,10);
-//    h1_mm_p->Draw("same");
-    h1_mm_q->Draw("same");
+    //h1_mm_p->Draw("same");
+    //h1_mm_q->Draw("same");
     //h1_mm_a->Scale(1./100.);
     h1_mm_a->Draw("same");
+//h1_mm->Fit("gausn","","",-19.,-16.);
     //f_mm->Draw("same");
     //h1_mm->SetMinimum(0.);
-//  exit(1);
+  //exit(1);
 
   theApp.Run();
   return 0;

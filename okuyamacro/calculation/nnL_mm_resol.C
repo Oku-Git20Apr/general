@@ -37,7 +37,7 @@ void nnL_mm_resol()
   		hist[i]->SetYTitle("Counts");
 		func[i] = new TF1(Form("func[%d]",i),"gausn",-4.,4.);
   }
-   TH2F *h2 = new TH2F("h2","MM vs Mass number",200,0,20,1000.,-6.,6.);
+   TH2F *h2 = new TH2F("h2","MM vs Mass number",200,0.,20,1000.,-6.,6.);
   h2->SetXTitle("A (mass number)");
   h2->SetYTitle("MM [MeV/c^2]");
   
@@ -134,10 +134,10 @@ double mm_rand(double mn)
 	double tek0  = te0 + tk0;//rad
  //cout<<"Ee0="<<Ee0<<", pep0="<<pep0<<", pk0="<<pk0<<", te0="<<te0<<", tk0="<<tk0<<", tek0="<<tek0<<endl;
 	//dEe = 0.;
-	//dpep= 0.;
-	//dpk = 0.;
-	//dte = 0.;
-	//dtk = 0.;
+	dpep= 0.;
+	dpk = 0.;
+	dte = 0.;
+	dtk = 0.;
 
 	double Ee = Ee0 + dEe;
 	double pep= pep0 + dpep;
