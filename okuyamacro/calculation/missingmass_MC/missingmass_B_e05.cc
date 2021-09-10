@@ -42,16 +42,10 @@ using namespace std;
 #include "TMarker.h"
 #include "TRandom.h"
 #include "Math/Integrator.h"
-double fmm_total(double *x, double *par){
-  double val = par[0] * TMath::Gaus(x[0],par[1],par[2],kTRUE);//s-orbit
-  val += par[3] * TMath::Gaus(x[0],par[4],par[5], kTRUE);//p-orbit
-  val += par[6] * TMath::Gaus(x[0],par[7],par[8], kTRUE);//p-orbit
-  val += par[9] * TMath::Gaus(x[0],par[10],par[11],kTRUE);//p-orbit
-  val += par[12];//Accidentals
-  if(x[0]>0)val += par[13] + par[14]*x[0] + par[15]*x[0];//Accidentals
 
-  return val;
-}
+//#define Eloss_e
+//#define Eloss_ep
+//#define Eloss_k
 
 static const double PI = 4.*atan(1.);
 static const double deg_to_rad = PI / 180.;//degree -> radian
@@ -115,7 +109,7 @@ double dEdx(double Delta, double thick, double Minc, double mom){ // dE, target 
   C0 = - (2. * log(I/(2.*PI) / hbar / mup) + 1.); // MeV
   a = 0.1;
   m = 3.0;
-  int tar = 4; // C:1, Ca40:2, Scin:3, Al:4
+  int tar = 1; // C:1, Ca40:2, Scin:3, Al:4
   switch(tar){
   case 1:  // C
     ro = 1.80;  Z = 6;  A = 12.011;
@@ -169,8 +163,8 @@ double dEdx(double Delta, double thick, double Minc, double mom){ // dE, target 
           +(3.850190*pow(eta,-2) - 0.1667989*pow(eta,-4) + 0.00159755*pow(eta,-6)) * 1e-9 * pow(I*1e+6,3);
   double Delta_b = nonrela * thick;//bar{Delta}
 
-  double LnEps = log((1.-beta*beta)*I*I / (2.*Me*beta*beta)) + beta*beta;//ln(eps)
-  double Xi = Delta_b * (log(Delta_b) - LnEps + 0.198 -delta);//Delta_mp (most probable)
+  double LnEps = log((1.-beta*beta)*I*I / (2.*Me*beta*beta)) + beta*beta;//ln(epx)
+  double Xi = Delta_b * (log(Delta_b) - LnEps + 0.198 -delta);//Delta_mp
 
   TF1 *f;
 
@@ -196,7 +190,7 @@ double dEdx(double Delta, double thick, double Minc, double mom){ // dE, target 
 
   double Func = Fai / Delta_b;//
 //  cout<<Delta<<"  "<<Xi<<"  "<<Func_max<<"  "<<Func<<endl;
-//  Func /= Func_max;
+  //Func /= Func_max;
 
   return Func;
 }
@@ -294,8 +288,8 @@ double GetVPTheta(double E, double Ep, double theta){
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 int main(int argc, char** argv){
   gStyle->SetOptStat(0);
-  gStyle->SetPadGridX(0);
-  gStyle->SetPadGridY(0);
+  gStyle->SetPadGridX(1);
+  gStyle->SetPadGridY(1);
   gStyle->SetPadTopMargin(0.1);
   gStyle->SetPadLeftMargin(0.15);
   gStyle->SetPadRightMargin(0.1);
@@ -305,15 +299,15 @@ int main(int argc, char** argv){
 ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6); 
 
 // Inputs
-  double E_beam     = 4240;  // 4240 2344 4318
-  double M_target   = 25133.144;// t: 2808.921 C12:11174.864  Ca40:37214.521  Ca48:44657.300 Al27:25133.144
+  double E_beam     = 2344;  // 4240 2344 4318
+  double M_target   = 11174.864;// t: 2808.921 C12:11174.864  Ca40:37214.521  Ca48:44657.300 Al27:25133.144
 // CS from M. Iodice et al., Phys. Rev. Lett. 99 (2007), 052501.
 //  double Ex[11] = {0.00, 0.14, 2.67, 5.74, 5.85, 10.48, 10.52, 10.98, 11.05, 12.95, 13.05};
 //  double CS[11] = {1.02, 3.66, 1.54, 0.58, 0.18,  0.24,  0.12,  1.43,  2.19,  0.91,  0.27};
 //  for(int i=0;i<11;i++){ Ex[i] -= 11.5; }
-// CS from L. Tang et al.,
-//  double Ex[9] = {-11.529, -11.348, -8.425, -5.488, -2.499, -1.220, -0.524, 0.223, 1.047};
-//  double CS[9] = {   22.2,    77.7,   33.5,   26.0,   20.5,   31.5,   87.7,  46.3,  28.5};
+// CS from L. Tang et al., B12L
+  double Ex[9] = {-11.529, -11.348, -8.425, -5.488, -2.499, -1.220, -0.524, 0.223, 1.047};
+  double CS[9] = {   22.2,    77.7,   33.5,   26.0,   20.5,   31.5,   87.7,  46.3,  28.5};
 // CS 
 //  double Ex[1] = {  0.0};
 //  double CS[1] = {   1.};
@@ -322,56 +316,55 @@ ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6);
 //  double CS[30] = { 13.7,  41.0,   8.1,  15.3,  90.8,  5.0, 30.2, 27.2, 108.1, 47.1, 50.6, 36.9, 86.3, 53.0, 11.2, 33.3,  5.2,    10,    10,   30,   30, 60,60};
 // CS from 28Si(e,e'K+)28LAl 2021/8/18
 //					1/2+(s)  1/2-,3/2-(p) 125 nb/sr -> divided by three.
-  double CSp_tot = 125.*5./6.;//Lambda in p-orbit
-  double CSpval1 = CSp_tot/3.;
-  double CSpval2 = CSp_tot/3.;
-  double CSpval3 = CSp_tot/3.;
-  //CSpval1 = CSp_tot;
-  //CSpval2 = 0.;
-  //CSpval3 = 0.;
-  double Expval1 = -6.3;
-  double Expval2 = -3.3;
-  double Expval3 = -0.8;
-  //double Ex[1]={-16.3};
-  //double Cs[1]={ 79.0};
-  double Ex[19] = { -16.3, -15.2, -13.5, -12.0, Expval1, Expval1*7.5/8.3, Expval1*5.5/8.3, Expval1*4.0/8.3, Expval1*2.8/8.3, Expval2, (Expval2-Expval1)+Expval1*7.5/8.3, (Expval2-Expval1)+Expval1*5.5/8.3, (Expval2-Expval1)+Expval1*4.0/8.3, (Expval2-Expval1)+Expval1*2.8/8.3, Expval3, (Expval3-Expval1)+Expval1*7.5/8.3, (Expval3-Expval1)+Expval1*5.5/8.3, (Expval3-Expval1)+Expval1*4.0/8.3, (Expval3-Expval1)+Expval1*2.8/8.3};
-  double CS[19] = {  79.0*5./6.,  26.3,  13.2,  35.1, CSpval1, CSpval1*100/320, CSpval1*60./320, CSpval1*100/320, CSpval1*60./320, CSpval2, CSpval2*100/320, CSpval2*60./320, CSpval2*100/320, CSpval2*60./320, CSpval3, CSpval3*100/320, CSpval3*60./320, CSpval3*100/320, CSpval3*60./320};
+//  double CSp_tot = 125.;//Lambda in p-orbit
+//  double CSpval1 = CSp_tot/3.;
+//  double CSpval2 = CSp_tot/3.;
+//  double CSpval3 = CSp_tot/3.;
+//  //CSpval1 = CSp_tot;
+//  //CSpval2 = 0.;
+//  //CSpval3 = 0.;
+//  double Expval1 = -6.3;
+//  double Expval2 = -3.3;
+//  double Expval3 = -0.8;
+//  double Ex[19] = { -16.3, -15.2, -13.5, -12.0, Expval1, Expval1*7.5/8.3, Expval1*5.5/8.3, Expval1*4.0/8.3, Expval1*2.8/8.3, Expval2, (Expval2-Expval1)+Expval1*7.5/8.3, (Expval2-Expval1)+Expval1*5.5/8.3, (Expval2-Expval1)+Expval1*4.0/8.3, (Expval2-Expval1)+Expval1*2.8/8.3, Expval3, (Expval3-Expval1)+Expval1*7.5/8.3, (Expval3-Expval1)+Expval1*5.5/8.3, (Expval3-Expval1)+Expval1*4.0/8.3, (Expval3-Expval1)+Expval1*2.8/8.3};
+//  double CS[19] = {  79.0,  26.3,  13.2,  35.1, CSpval1, CSpval1*100/320, CSpval1*60./320, CSpval1*100/320, CSpval1*60./320, CSpval2, CSpval2*100/320, CSpval2*60./320, CSpval2*100/320, CSpval2*60./320, CSpval3, CSpval3*100/320, CSpval3*60./320, CSpval3*100/320, CSpval3*60./320};
   int    CS_num = sizeof(CS)/sizeof(CS[0]);
   double CS_sum = accumulate(CS, CS + CS_num, 0.0f);
 cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
-  double P_scat     = 2740;  // 2740  844  2100
-  double Theta_scat = 6.5 * PI/180.;
+  double P_scat     = 844;  // 2740  844  2100
+  double Theta_scat = 4.7 * PI/180.;
   double Phi_scat   = 0.0 * PI/180.;
-  double Theta_K    = 11.5 * PI/180.;
+  double Theta_K    = 4.9 * PI/180.;
   double Phi_K      = 180.0 * PI/180.;
-  double M_hyper    = 25318.694; // nnL:2992.227 B12L:11356.861  K40L:37382.452  K48L:44832.515 Mg27L:25318.694
+  double M_hyper    = 11356.861; // nnL:2992.227 B12L:11356.861  K40L:37382.452  K48L:44832.515 Mg27L:25318.694
                                                        // E05  E12-15
   double Ereso_beam     = 1.0 * 1E-4 * fwhm_to_sigma;  // 1.0  1.0
-  double Preso_scat     = 1.08 * 1E-4 * fwhm_to_sigma;  // 4.2  2.0
-  double Thetareso_scat = 0.389 * 1E-3 * fwhm_to_sigma;                  // 0.5  0.4  // rad
-  double Phireso_scat   = 0.8 * 1E-3;                  // 1.0  0.4  // rad
-  double Preso_K        = 2.32 * 1E-4 * fwhm_to_sigma;  // 2.0  2.0
-  double Thetareso_K    = 0.487 * 1E-3 * fwhm_to_sigma;                  // 0.4  0.4  // rad  ~dY'
-  double Phireso_K      = 0.4 * 1E-3;                  // 1.0  0.4  // rad  ~dX'
+  double Preso_scat     = 4.2 * 1E-4 * fwhm_to_sigma;  // 4.2  2.0
+  double Thetareso_scat = 0.5 * 1E-3 * fwhm_to_sigma;                  // 0.5  0.4  // rad
+  double Phireso_scat   = 1.0 * 1E-3;                  // 1.0  0.4  // rad
+  double Preso_K        = 2.0 * 1E-4 * fwhm_to_sigma;  // 2.0  2.0
+  double Thetareso_K    = 0.4 * 1E-3 * fwhm_to_sigma;                  // 0.4  0.4  // rad  ~dY'
+  double Phireso_K      = 1.0 * 1E-3;                  // 1.0  0.4  // rad  ~dX'
 
-  double thick = 0.037*2.;  // target thickness in cm (0.05cm = 500um)
+  double thick = 0.056;  // target thickness in cm (0.05cm = 500um)
                          // E05  E12-15
   //int roop = 100000;       // 1800  800
-  //int roop = 314.5*14.5;       // 1800  800
-  int roop = 2.*(CS_sum/79.)*14.5*24.*0.5;// 2 [counts/hour] * CS factor * 14.5 [day(w/ JLab eff.)] * 24 [hours/day] * 0.5 (Eff.)
+  int roop = 14.9*(CS_sum/79)*(4.9*(10./20.)+15.4+39.3*(35./20.))*3.;// Run time from Gogami D-thesis, Tab.3.6
+  //int roop = 1800;       // 1800  800
   //int QF   = roop * 0.;  // (50) 2.0% sticking
   //int Acc  = roop * 0.; // 37    3.7
   //int QF   = roop * 50.;  // (50) 2.0% sticking
   int QF   = roop * 30.;  // (50) 2.0% sticking
   //int Acc  = roop * 3.7; // 37    3.7
+  double rate_e_e05 = 1.5*1000.*1000.;//Hz
   double rate_e = 16.6*1000.;//Hz
   double rate_k_e05 = 110.;//Hz (E05-115:Carbon, 7.78msr, 87.5mg/cm2, 19.3uA, Chiba M-thesis)
-  double rate_k = rate_k_e05 * (4.98/8.50) * (100./87.5) * (20./19.3) * (pow(27.,0.8-1.)/pow(12.,0.8-1.));//dOmega,Nt,Ie,A^(0.8)
-  double rate_acc = rate_e * rate_k * 2.0E-9;//Hz
+  double rate_k = rate_k_e05 * (4.98/8.50) * (100./87.5) * (20./19.3);//dOmega,Nt,Ie,A^(0.8)
+  double rate_acc = rate_e_e05 * rate_k_e05 * 2.0E-9;//Hz
 cout<<"Kaon Rate = "<<rate_k<<" [Hz]"<<endl;
 cout<<"Accidnetal Rate = "<<rate_acc<<" [Hz]"<<endl;
-  //int Acc  = roop * (rate_acc/6.1E-3); //okuyama
-  int Acc  = rate_acc * 14.5 * 24. * 3600. ;//Acc. rate [Hz] * 14.5 [day] * 24 [day/hour] * 3600 [sec/hour] * (real factor)
+  //int Acc  = roop * (rate_acc/0.1959)*60.; //okuyama
+  int Acc  = rate_acc *(4.9*(10./20.)+15.4+39.3*(35./20.))*3600.*30.; //okuyama
 cout<<"Acc = "<<Acc<<endl;
   //int Acc  = roop * 1.0; // 37    3.7
   //int Acc  = 4170; //akiyama
@@ -383,20 +376,14 @@ cout<<"Acc = "<<Acc<<endl;
   TH1D *h1_dEe = new TH1D("dEe","dEe",400,0.,10.);
   TH1D *h1_dEep = new TH1D("dEep","dEep",400,0.,10.);
   TH1D *h1_dEk = new TH1D("dEk","dEk",400,0.,10.);
-  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",300,-20,10);
-  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",300,-20,10);
-  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",300,-20,10);
-TH1D *h1_mm_a2= new TH1D("h1_mm_a2","h1_mm_a2",300,-20,10);
-  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,300,-20,10);
-  TH1D *h1_mm2  = new TH1D("h1_mm2" ,"h1_mm2" ,300,-20,10);
-  TH1D *h1_mm3  = new TH1D("h1_mm3" ,"h1_mm3" ,300,-20,10);
-  SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kBlack,1,3004,kBlack);
-  SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kRed,1,3004,kRed);
-  SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kGreen ,1,1001,kGreen);
-  SetTH1(h1_mm_a2 ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kGreen ,1,1001,kGreen);
-  SetTH1(h1_mm    ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kBlack ,1,3004,kBlack);
-  SetTH1(h1_mm2   ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kBlack ,1,3004,kBlack);
-  SetTH1(h1_mm3   ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.1 MeV/#it{c}^{2})",kBlack ,1,3004,kBlack);
+  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",800,-15,5);
+  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",800,-15,5);
+  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",800,-15,5);
+  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,800,-15,5);
+  SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kAzure,1,3004,kAzure);
+  SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kRed,1,3004,kRed);
+  SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kGreen ,1,1001,kGreen);
+  SetTH1(h1_mm    ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kAzure ,1,3004,kAzure);
   //SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,3004,kPink  +7);
   //SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,3004,kViolet+7);
   //SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (0.2 MeV/#it{c}^{2})",kBlack   ,1,1001,kBlack   );
@@ -413,16 +400,11 @@ TH1D *h1_mm_a2= new TH1D("h1_mm_a2","h1_mm_a2",300,-20,10);
   h1_mm->SetStats(1111);
   h1_mm->SetMarkerStyle(20);
   h1_mm->SetMarkerSize(0.8);
-  h1_mm2->SetStats(1111);
-  h1_mm2->SetMarkerStyle(20);
-  h1_mm2->SetMarkerSize(0.8);
-  h1_mm3->SetStats(1111);
-  h1_mm3->SetMarkerStyle(20);
-  h1_mm3->SetMarkerSize(0.8);
 
   int gs_num = 0;
   for(int n=0;n<roop;n++){
 if(n%500==0){cout<<n<<"/"<<roop<<endl;}
+if(n%20==0){cout<<n<<"/"<<roop<<endl;}
 // electron beam
     double M1     = Me;
     double E1     = E_beam;
@@ -515,20 +497,22 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
     double Z = gRandom->Uniform(0,thick);
     double y, yy, dE = 0.;
 //    double dE_max = 3.0;
-    double y_max = 0.1;
-#if 1
+    double y_max = 10.;
+#ifdef Eloss_e
     while(1){
       y = gRandom->Uniform(0,y_max);
       dE = gRandom->Uniform(0,1.);//0-1 MeV
       yy = dEdx(dE,Z,Me,P1);
-      if(y<yy){ 
-	  //if(y_max<yy){cout<<"y_max is too small"<<endl;}
+//cout<<"dEdx="<<yy<<endl;
+	//	cout<<"eeeeeeeeeeeeeeee"<<endl;
+      if(y<yy&&yy<y_max){ 
 		//cout<<Form("e- %04d  dE [MeV], yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
 		 break; }
+	  //if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     E1    -= dE;
-    E1    += 0.311;//energy correction
+    E1    += 0.121;//energy correction
     E1    += gRandom->Gaus(0,E_beam*Ereso_beam);
     P1     = E2p(E1,M1);
     Theta1 = 0.;
@@ -536,24 +520,26 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
     p1.SetMagThetaPhi(P1,Theta1,Phi1);
     lp1.SetVect(p1);
     lp1.SetE(E1);
-	h1_dEe->Fill(yy);
+	h1_dEe->Fill(dE);
 
-#if 1
+#ifdef Eloss_ep
+    y_max = 0.01;
     while(1){
       y = gRandom->Uniform(0,y_max);
       //dE = gRandom->Uniform(0,(thick-Z)*5.);
       dE = gRandom->Uniform(0,1.);
       yy = dEdx(dE,thick-Z,Me,P3);
-      if(y<yy){
+	//	cout<<"e'e'e'e'e'e'e'e'"<<endl;
+      if(y<yy&&yy<y_max){
 		 //cout<<Form("ep %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
 		 break; }
-	  if(y_max<yy){cout<<"y_max is too small"<<endl;}
+	  //if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     P3     += gRandom->Gaus(0,P_scat*Preso_scat);
     E3      = p2E(M3,P3);
     E3     += dE;
-    E3     -= 0.332;//energy correction
+    E3     -= 0.091;//energy correction
     P3      = E2p(E3,M3);
     Theta3 += gRandom->Gaus(1E-3,Thetareso_scat);
     Phi3   += gRandom->Gaus(0,Phireso_scat);
@@ -562,22 +548,24 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
     lp3.SetE(E3);
 	h1_dEep->Fill(dE);
 
-#if 1
+#ifdef Eloss_k
+    y_max = 0.01;
     while(1){
       y = gRandom->Uniform(0,y_max);
       //dE = gRandom->Uniform(0,(thick-Z)*5.);
       dE = gRandom->Uniform(0,1.);
       yy = dEdx(dE,thick-Z,MK,P5);
-      if(y<yy){ 
+	//	cout<<"kkkkkkkkkkkkkk"<<endl;
+      if(y<yy&&yy<y_max){ 
 	//	cout<<Form("K+ %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
 		 break; }
-	  if(y_max<yy){cout<<"y_max is too small"<<endl;}
+	  //if(y_max<yy){cout<<"y_max is too small"<<endl;}
     }
 #endif
     P5     += gRandom->Gaus(0,P5*Preso_K);
     E5      = p2E(M5,P5);
     E5     += dE;
-    E5     -= 0.187;//energy correction
+    E5     -= 0.062;//energy correction
     P5      = E2p(E5,M5);
     Theta5 += gRandom->Gaus(0,Thetareso_K);
     Phi5   += gRandom->Gaus(0,Phireso_K);
@@ -590,7 +578,6 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
     lp = lp1 + lp2 - lp3 - lp5;
 
     double mass = lp.M() - M_hyper;
-	mass += -16.3+16.6807;//more energy correction
 
     h1_mm_p->Fill(mass);
 
@@ -611,34 +598,30 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
 #endif
 #if 1
   for(int n=0;n<Acc;n++){
-    //double mass = gRandom->Uniform(-100,100);
-	double pep0  = 2740.*(1.+0.045*(1.-2.*gRandom->Uniform()));//MeV
+    //double mass = gRandom->Uniform(-20,20);
+	double pep0  = 844.*(1.+0.175*(1.-2.*gRandom->Uniform()));//MeV
 	double pk0   = 1200.*(1.+0.125*(1.-2.*gRandom->Uniform()));//MeV
 	double PI    = 4.*atan(1.);
 //cout<<"PI="<<PI<<endl;
-	double Ee0   = 4240.;//MeV
+	double massunit = 931.49410242;//MeV
+	double Ee0   = 2340.;//MeV
 	double te0   = 6.5*PI/180.;//rad
-	double tk0   = 11.5*PI/180.;//rad
+	double tk0   = 6.5*PI/180.;//rad
 	double tek0  = te0 + tk0;//rad
 	double pe0  = sqrt(Ee0*Ee0-Me*Me);
 	double Eep0 = sqrt(pep0*pep0+Me*Me);
 	double Ek0  = sqrt(pk0*pk0+MK*MK);
-	double MT = 25.133*1000.;// 27Al
-	double MH = 25.319*1000.+14.;// 26Mg+L
+	//double MT = 25.133*1000.;// 27Al
+	//double MH = 25.319*1000.+14.;// 26Mg+L
+	double MT = 12.0178*massunit;//12C 
+	double MH = 10.81*massunit+ML;// B12L 
 	double MM0= sqrt(pow((Ee0-Eep0+MT-Ek0),2.)-(pe0*pe0+pep0*pep0+pk0*pk0-2.*pe0*pep0*cos(te0)-2.*pe0*pk0*cos(tk0)+2.*pep0*pk0*cos(tek0)));
     h1_mm_a->Fill(MM0-MH);
-    h1_mm_a2->Fill(MM0-MH);
   }
 #endif
   h1_mm->Add(h1_mm_p);
   h1_mm->Add(h1_mm_q);
   h1_mm->Add(h1_mm_a);
-  h1_mm2->Add(h1_mm_p);
-  h1_mm2->Add(h1_mm_q);
-  h1_mm2->Add(h1_mm_a);
-  h1_mm3->Add(h1_mm_p);
-  h1_mm3->Add(h1_mm_q);
-  h1_mm3->Add(h1_mm_a);
 //#if 1
 //  for(int n=0;n<Acc*99;n++){
 //    double mass = gRandom->Uniform(-100,100);
@@ -646,7 +629,7 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
 //  }
 //#endif
 
-// TF1 *f_mm = new TF1("f_mm","gaus",-10,10);
+ TF1 *f_mm = new TF1("f_mm","gaus",-10,10);
 // SetTF1(f_mm);
  //h1_mm->Fit(f_mm,"","",-10,10);
   //cout<<"RMS: "<<f_mm->GetParameter(2)<<"  "<<f_mm->GetParError(2)<<endl;
@@ -658,132 +641,31 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
   //c1->cd(1)->DrawFrame(-20.,0.,20.,1E+4);
     //h1_mm->Draw("E");
     h1_mm->Draw("E");
+    //h1_mm->Fit("gausn","","",-16,-14);
     //h1_mm->GetXaxis()->SetRangeUser(-25,10);
     //h1_mm->GetXaxis()->SetRangeUser(-30,10);
     //h1_mm_p->Draw("same");
     //h1_mm_q->Draw("same");
     //h1_mm_a->Scale(1./100.);
     h1_mm_a->Draw("same");
-  TCanvas *c2 = new TCanvas("c2","c2",800,600);
-  c2->Divide(1,2,1E-4,1E-4);
-  c2->cd(1);
-	TF1* f_acc  = new TF1("f_acc" ,"pol0",-20.,10.);
-	TF1* f_qf  = new TF1("f_qf" ,"pol2",-20,10.);
-    h1_mm_a2->Fit(f_acc);
-    h1_mm_q->Fit(f_qf,"","",0.,10.);
-  c2->cd(2);
-    h1_mm2->Draw("E");
-    h1_mm_a->Draw("same");
-	TF1* fs  = new TF1("fs" ,"gausn+pol0(3)",-20.,10.);
-	TF1* fp1 = new TF1("fp1","gausn+pol0(3)",-20.,10.);
-	TF1* fp2 = new TF1("fp2","gausn+pol0(3)",-20.,10.);
-	TF1* fp3 = new TF1("fp3","gausn+pol0(3)",-20.,10.);
-	fs ->SetParameter(0,100);
-	fs ->SetParameter(1,-16.3);
-	fs ->SetParameter(2,0.81);
-	fs ->FixParameter(3,f_acc->GetParameter(0));
-	fp1->SetParameter(0,50);
-	fp1->SetParameter(1,-6.1);
-	fp1->SetParameter(2,1.0);
-	fp1->FixParameter(3,f_acc->GetParameter(0));
-	fp2->SetParameter(0,50);
-	fp2->SetParameter(1,-3.1);
-	fp2->SetParameter(2,1.0);
-	fp2->FixParameter(3,f_acc->GetParameter(0));
-	fp3->SetParameter(0,50);
-	fp3->SetParameter(1,-0.8);
-	fp3->SetParameter(2,1.0);
-	fp3->FixParameter(3,f_acc->GetParameter(0));
-	h1_mm2->Fit(fs,"","",-18.,-15.);
-	h1_mm2->Fit(fp1,"","",-8.0,-5.5);
-	h1_mm2->Fit(fp2,"","",-5.0,-2.5);
-	h1_mm2->Fit(fp3,"","",-1.5,0.);
-    h1_mm2->Draw("E");
-    h1_mm_a->Draw("same");
-	fs->Draw("same");
-	fp1->Draw("same");
-	fp2->Draw("same");
-	fp3->Draw("same");
-cout<<"Energy Loss"<<endl;
-  TCanvas *c3 = new TCanvas("c3","c3",800,600);
-  c3->Divide(2,2,1E-4,1E-4);
-  c3->cd(1);
-  h1_dEe->Draw("");
-  h1_dEe->Fit("gausn");
-  c3->cd(2);
-  h1_dEep->Draw("");
-  h1_dEep->Fit("gausn");
-  c3->cd(3);
-  h1_dEk->Draw("");
-  h1_dEk->Fit("gausn");
-  TCanvas *c4 = new TCanvas("c4","c4",800,600);
-  c4->Divide(1,1,1E-4,1E-4);
-	TF1* fs_result  = new TF1( "fs_result","gausn",-20.,10.);
-	TF1* fp1_result = new TF1("fp1_result","gausn",-20.,10.);
-	TF1* fp2_result = new TF1("fp2_result","gausn",-20.,10.);
-	TF1* fp3_result = new TF1("fp3_result","gausn",-20.,10.);
-	TF1* ftot_result= new TF1("ftot_result",fmm_total,-20.,10.,16);
-	fs_result->SetNpx(2000);
-	fp1_result->SetNpx(2000);
-	fp2_result->SetNpx(2000);
-	fp3_result->SetNpx(2000);
-	ftot_result->SetNpx(2000);
-	fs_result->SetLineColor(kAzure);
-	fp1_result->SetLineColor(kAzure);
-	fp2_result->SetLineColor(kAzure);
-	fp3_result->SetLineColor(kAzure);
-	fs_result->SetFillColor(kAzure);
-	fp1_result->SetFillColor(kAzure);
-	fp2_result->SetFillColor(kAzure);
-	fp3_result->SetFillColor(kAzure);
-	fs_result->SetFillStyle(3004);
-	fp1_result->SetFillStyle(3004);
-	fp2_result->SetFillStyle(3004);
-	fp3_result->SetFillStyle(3004);
-	ftot_result->SetLineColor(kRed);
-	fs_result ->SetParameter(0,fs->GetParameter(0));
-	fs_result ->SetParameter(1,fs->GetParameter(1));
-	fs_result ->SetParameter(2,fs->GetParameter(2));
-	fp1_result->SetParameter(0,fp1->GetParameter(0));
-	fp1_result->SetParameter(1,fp1->GetParameter(1));
-	fp1_result->SetParameter(2,fp1->GetParameter(2));
-	fp2_result->SetParameter(0,fp2->GetParameter(0));
-	fp2_result->SetParameter(1,fp2->GetParameter(1));
-	fp2_result->SetParameter(2,fp2->GetParameter(2));
-	fp3_result->SetParameter(0,fp3->GetParameter(0));
-	fp3_result->SetParameter(1,fp3->GetParameter(1));
-	fp3_result->SetParameter(2,fp3->GetParameter(2));
-	ftot_result ->SetParameter(0,fs->GetParameter(0));
-	ftot_result ->SetParameter(1,fs->GetParameter(1));
-	ftot_result ->SetParameter(2,fs->GetParameter(2));
-	ftot_result ->SetParameter(3,fp1->GetParameter(0));
-	ftot_result ->SetParameter(4,fp1->GetParameter(1));
-	ftot_result ->SetParameter(5,fp1->GetParameter(2));
-	ftot_result ->SetParameter(6,fp2->GetParameter(0));
-	ftot_result ->SetParameter(7,fp2->GetParameter(1));
-	ftot_result ->SetParameter(8,fp2->GetParameter(2));
-	ftot_result ->SetParameter(9,fp3->GetParameter(0));
-	ftot_result ->SetParameter(10,fp3->GetParameter(1));
-	ftot_result ->SetParameter(11,fp3->GetParameter(2));
-	ftot_result ->SetParameter(12,f_acc->GetParameter(0));
-	ftot_result ->SetParameter(13,f_qf->GetParameter(0));
-	ftot_result ->SetParameter(14,f_qf->GetParameter(1));
-	ftot_result ->SetParameter(15,f_qf->GetParameter(2));
-  h1_mm3->Draw("E");
-    h1_mm_a->Draw("same");
-	fs_result->Draw("same");
-	fp1_result->Draw("same");
-	fp2_result->Draw("same");
-	fp3_result->Draw("same");
-	ftot_result->Draw("same");
+    h1_mm_p->Draw("same");
+h1_mm_p->Fit("gausn","","",-13.,-10.);
+    //f_mm->Draw("same");
+    //h1_mm->SetMinimum(0.);
   //exit(1);
-//  double Ex[19] = { -16.3, -15.2, -13.5, -12.0, Expval1, Expval1*7.5/8.3, Expval1*5.5/8.3, Expval1*4.0/8.3, Expval1*2.8/8.3, Expval2, (Expval2-Expval1)+Expval1*7.5/8.3, (Expval2-Expval1)+Expval1*5.5/8.3, (Expval2-Expval1)+Expval1*4.0/8.3, (Expval2-Expval1)+Expval1*2.8/8.3, Expval3, (Expval3-Expval1)+Expval1*7.5/8.3, (Expval3-Expval1)+Expval1*5.5/8.3, (Expval3-Expval1)+Expval1*4.0/8.3, (Expval3-Expval1)+Expval1*2.8/8.3};
-//  double CS[19] = {  79.0,  26.3,  13.2,  35.1, CSpval1, CSpval1*100/320, CSpval1*60./320, CSpval1*100/320, CSpval1*60./320, CSpval2, CSpval2*100/320, CSpval2*60./320, CSpval2*100/320, CSpval2*60./320, CSpval3, CSpval3*100/320, CSpval3*60./320, CSpval3*100/320, CSpval3*60./320};
+  //TCanvas *c3 = new TCanvas("c3","c3",800,600);
+  //c3->Divide(2,2,1E-4,1E-4);
+  //c3->cd(1);
+  //h1_dEe->Draw("");
+  //h1_dEe->Fit("gausn");
+  //c3->cd(2);
+  //h1_dEep->Draw("");
+  //h1_dEep->Fit("gausn");
+  //c3->cd(3);
+  //h1_dEk->Draw("");
+  //h1_dEk->Fit("gausn");
   
-  c1->Print("pdf/Mg27L_scaled.pdf");
-  c2->Print("pdf/Mg27L_scaled_fitprocess.pdf");
-  c4->Print("pdf/Mg27L_scaled_fit.pdf");
-  cout<<"Print complete!"<<endl;
+  c1->Print("pdf/B12L_scaled2.pdf");
 
   theApp.Run();
   return 0;

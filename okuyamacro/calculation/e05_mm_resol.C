@@ -11,7 +11,7 @@ double mm_rand(double mn);
 
  double alpha = 1./137.;
 
-void next_mm_resol()
+void e05_mm_resol()
 {
   gROOT->Reset();
   char line[300];
@@ -26,7 +26,7 @@ void next_mm_resol()
    //TH1F *h1 = new TH1F("Missing Mass","",1000,ML-400.,ML+400.);
    h1->SetXTitle("MM-Mtrue[MeV/c^{2}]");
    h1->SetYTitle("Counts");
-   TH1F *hmm_adep = new TH1F("hmm_adep","",200,0.,200.);
+   TH1F *hmm_adep = new TH1F("hmm_adep","",200,0.,20.);
    hmm_adep->SetXTitle("A (mass number of the target)");
    hmm_adep->SetYTitle("MM resolution (FWHM) [MeV/c^{2}]");
 	TH1F *hist[200];
@@ -40,7 +40,7 @@ void next_mm_resol()
    TH2F *h2 = new TH2F("h2","",200,0,20,1000.,-4.,4.);
   h2->SetXTitle("A (mass number of the target)");
   h2->SetYTitle("MM deviation [MeV/c^{2}]");
-   TH2F *h2_pepk = new TH2F("h2_pepk","",200,200.,1200.-150.,1200.+150.,2740.-124.,2740.+124.);
+   TH2F *h2_pepk = new TH2F("h2_pepk","",200,1200.-150.,1200.+150.,200,844.-150.,844.+150.);
    TH1F *h_mm_range = new TH1F("h_mm_range","",1000,-300.,300.);
    h_mm_range->SetLineColor(kGreen);
   
@@ -52,19 +52,22 @@ void next_mm_resol()
 		value = mm_rand(massnum*0.1);
 		if(massnum==10){
 			h1->Fill(value);
-	double pep0  = 2740.*(1.+0.045*(1.-2.*gRandom->Uniform()));//MeV
+	double pep0  = 844.*(1.+0.175*(1.-2.*gRandom->Uniform()));//MeV
 	double pk0   = 1200.*(1.+0.125*(1.-2.*gRandom->Uniform()));//MeV
 	double PI    = 4.*atan(1.);
 //cout<<"PI="<<PI<<endl;
-	double Ee0   = 4240.;//MeV
+	double massunit = 931.49410242;//MeV
+	double Ee0   = 2340.;//MeV
 	double te0   = 6.5*PI/180.;//rad
-	double tk0   = 11.5*PI/180.;//rad
+	double tk0   = 6.5*PI/180.;//rad
 	double tek0  = te0 + tk0;//rad
 	double pe0  = sqrt(Ee0*Ee0-Me*Me);
 	double Eep0 = sqrt(pep0*pep0+Me*Me);
 	double Ek0  = sqrt(pk0*pk0+MK*MK);
-	double MT = 25.133*1000.;// 27Al
-	double MH = 25.319*1000.+14.;// 26Mg+L
+	//double MT = 25.133*1000.;// 27Al
+	//double MH = 25.319*1000.+14.;// 26Mg+L
+	double MT = 12.0178*massunit;//12C 
+	double MH = 10.81*massunit+ML;// B12L 
 	double MM0= sqrt(pow((Ee0-Eep0+MT-Ek0),2.)-(pe0*pe0+pep0*pep0+pk0*pk0-2.*pe0*pep0*cos(te0)-2.*pe0*pk0*cos(tk0)+2.*pep0*pk0*cos(tek0)));
 			h2_pepk->Fill(pk0,pep0);
 			h_mm_range->Fill(MM0-MH);
@@ -147,18 +150,18 @@ double mm_rand(double mn)
    float pi = 3.141592;
 	double massunit = 931.49410242;//MeV
 
-	double Ee0   = 4240.;//MeV
-	double pep0  = 2740.*(1.+0.045*(1.-2.*gRandom->Uniform()));//MeV
+	double Ee0   = 2340.;//MeV
+	double pep0  = 844.*(1.+0.175*(1.-2.*gRandom->Uniform()));//MeV
 	double pk0   = 1200.*(1.+0.125*(1.-2.*gRandom->Uniform()));//MeV
 	//double te0   = 13.2*pi/180.+2.*pi/180.*(1.-0.5*gRandom->Uniform());//rad
 	//double tk0   = 13.2*pi/180.+2.*pi/180.*(1.-0.5*gRandom->Uniform());//rad
 	//
-//isomeric (theta_ee'=6.5\pm2.2 deg, theta_ek=11.5\pm2.6 deg)
+//isomeric (theta_ee'=6.5\pm3.0 deg, theta_ek=6.5\pm3.0 deg)
 	double te0 = 0.;
 	double tk0 = 0.;
-	while(te0*180./pi<4.3||tk0*180./pi<8.9){
-	te0   = acos(1.-gRandom->Uniform()*(1.-cos(8.7*pi/180.)));//rad
-	tk0   = acos(1.-gRandom->Uniform()*(1.-cos(14.1*pi/180.)));//rad
+	while(te0*180./pi<3.5||tk0*180./pi<3.5){
+	te0   = acos(1.-gRandom->Uniform()*(1.-cos(9.5*pi/180.)));//rad
+	tk0   = acos(1.-gRandom->Uniform()*(1.-cos(9.5*pi/180.)));//rad
 	}
 	//double dEe  = Ee0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
 	//double dpep = pep0*(0.0001/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//MeV/c
@@ -166,10 +169,10 @@ double mm_rand(double mn)
 	//double dte  = (0.0006/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
 	//double dtk  = (0.0002/2.35)*sqrt(-2.*log(gRandom->Uniform()))*cos(2.*pi*gRandom->Uniform());//rad
 	double dEe  = gRandom->Gaus(0.,Ee0*(0.0001/2.35));//MeV/c
-	double dpep = gRandom->Gaus(0.,pep0*(0.00033/2.35));//MeV/c
-	double dpk	= gRandom->Gaus(0.,pk0*(0.000225/2.35));//MeV/c
-	double dte  = gRandom->Gaus(0.,(0.00112/2.35));//rad
-	double dtk  = gRandom->Gaus(0.,(0.000571/2.35));//rad
+	double dpep = gRandom->Gaus(0.,pep0*(0.0002/2.35));//MeV/c
+	double dpk	= gRandom->Gaus(0.,pk0*(0.0002/2.35));//MeV/c
+	double dte  = gRandom->Gaus(0.,0.004);//rad
+	double dtk  = gRandom->Gaus(0.,0.0004);//rad
 	double tek0  = te0 + tk0;//rad
  //cout<<"Ee0="<<Ee0<<", pep0="<<pep0<<", pk0="<<pk0<<", te0="<<te0<<", tk0="<<tk0<<", tek0="<<tek0<<endl;
 	//dEe = 0.;
