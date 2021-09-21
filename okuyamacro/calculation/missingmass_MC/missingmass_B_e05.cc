@@ -349,7 +349,7 @@ cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
   double thick = 0.056;  // target thickness in cm (0.05cm = 500um)
                          // E05  E12-15
   //int roop = 100000;       // 1800  800
-  int roop = 14.9*(CS_sum/79)*(4.9*(10./20.)+15.4+39.3*(35./20.))*3.;// Run time from Gogami D-thesis, Tab.3.6
+  int roop = 14.9*(CS_sum/79)*(4.9*(10./20.)+15.4+39.3*(35./20.))*2.5;// Run time from Gogami D-thesis, Tab.3.6
   //int roop = 1800;       // 1800  800
   //int QF   = roop * 0.;  // (50) 2.0% sticking
   //int Acc  = roop * 0.; // 37    3.7
@@ -364,7 +364,7 @@ cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
 cout<<"Kaon Rate = "<<rate_k<<" [Hz]"<<endl;
 cout<<"Accidnetal Rate = "<<rate_acc<<" [Hz]"<<endl;
   //int Acc  = roop * (rate_acc/0.1959)*60.; //okuyama
-  int Acc  = rate_acc *(4.9*(10./20.)+15.4+39.3*(35./20.))*3600.*30.; //okuyama
+  int Acc  = rate_acc *(4.9*(10./20.)+15.4+39.3*(35./20.))*3600.*50.; //okuyama
 cout<<"Acc = "<<Acc<<endl;
   //int Acc  = roop * 1.0; // 37    3.7
   //int Acc  = 4170; //akiyama
@@ -373,13 +373,15 @@ cout<<"Acc = "<<Acc<<endl;
   //TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",700,-40,100);
   //TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",700,-40,100);
   //TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,700,-40,100);
+  TH1D *h1_test = new TH1D("h1_test","test",400,500.,1500.);
+  TH1D *h1_mm_testa = new TH1D("h1_mm_test","h1_mm_a",3200,-400,400);
   TH1D *h1_dEe = new TH1D("dEe","dEe",400,0.,10.);
   TH1D *h1_dEep = new TH1D("dEep","dEep",400,0.,10.);
   TH1D *h1_dEk = new TH1D("dEk","dEk",400,0.,10.);
-  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",800,-15,5);
-  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",800,-15,5);
-  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",800,-15,5);
-  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,800,-15,5);
+  TH1D *h1_mm_p = new TH1D("h1_mm_p","h1_mm_p",3200,-40,40);
+  TH1D *h1_mm_q = new TH1D("h1_mm_q","h1_mm_q",3200,-40,40);
+  TH1D *h1_mm_a = new TH1D("h1_mm_a","h1_mm_a",3200,-40,40);
+  TH1D *h1_mm   = new TH1D("h1_mm"  ,"h1_mm"  ,3200,-40,40);
   SetTH1(h1_mm_p  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kAzure,1,3004,kAzure);
   SetTH1(h1_mm_q  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kRed,1,3004,kRed);
   SetTH1(h1_mm_a  ,"" ,"-B_{#Lambda} (MeV/#it{c}^{2})","Counts / (250 keV/#it{c}^{2})",kGreen ,1,1001,kGreen);
@@ -601,6 +603,7 @@ if(n%20==0){cout<<n<<"/"<<roop<<endl;}
     //double mass = gRandom->Uniform(-20,20);
 	double pep0  = 844.*(1.+0.175*(1.-2.*gRandom->Uniform()));//MeV
 	double pk0   = 1200.*(1.+0.125*(1.-2.*gRandom->Uniform()));//MeV
+	h1_test->Fill(pep0);
 	double PI    = 4.*atan(1.);
 //cout<<"PI="<<PI<<endl;
 	double massunit = 931.49410242;//MeV
@@ -617,6 +620,7 @@ if(n%20==0){cout<<n<<"/"<<roop<<endl;}
 	double MH = 10.81*massunit+ML;// B12L 
 	double MM0= sqrt(pow((Ee0-Eep0+MT-Ek0),2.)-(pe0*pe0+pep0*pep0+pk0*pk0-2.*pe0*pep0*cos(te0)-2.*pe0*pk0*cos(tk0)+2.*pep0*pk0*cos(tek0)));
     h1_mm_a->Fill(MM0-MH);
+    h1_mm_testa->Fill(MM0-MH);
   }
 #endif
   h1_mm->Add(h1_mm_p);
@@ -648,8 +652,8 @@ if(n%20==0){cout<<n<<"/"<<roop<<endl;}
     //h1_mm_q->Draw("same");
     //h1_mm_a->Scale(1./100.);
     h1_mm_a->Draw("same");
-    h1_mm_p->Draw("same");
-h1_mm_p->Fit("gausn","","",-13.,-10.);
+    //h1_mm_p->Draw("same");
+//h1_mm_p->Fit("gausn","","",-13.,-10.);
     //f_mm->Draw("same");
     //h1_mm->SetMinimum(0.);
   //exit(1);
@@ -665,7 +669,11 @@ h1_mm_p->Fit("gausn","","",-13.,-10.);
   //h1_dEk->Draw("");
   //h1_dEk->Fit("gausn");
   
-  c1->Print("pdf/B12L_scaled2.pdf");
+  TCanvas *c2 = new TCanvas("c2","c2",800,600);
+  h1_test->Draw("");
+  TCanvas *c3 = new TCanvas("c3","c3",800,600);
+  h1_mm_testa->Draw("");
+  //c1->Print("pdf/B12L_scaled2.pdf");
 
   theApp.Run();
   return 0;

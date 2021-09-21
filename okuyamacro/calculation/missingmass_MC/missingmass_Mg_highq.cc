@@ -43,12 +43,9 @@ using namespace std;
 #include "TRandom.h"
 #include "Math/Integrator.h"
 
-#define Eloss_e_cell
-//#define Eloss_e_gas
-#define Eloss_ep_cell
-//#define Eloss_ep_gas
-#define Eloss_k_cell
-//#define Eloss_k_gas
+#define Eloss_e
+#define Eloss_ep
+#define Eloss_k
 
 double fmm_total(double *x, double *par){
   double val = par[0] * TMath::Gaus(x[0],par[1],par[2],kTRUE);//s-orbit
@@ -520,7 +517,7 @@ cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
                          // E05  E12-15
   //int roop = 100000;       // 1800  800
   //int roop = 314.5*14.5;       // 1800  800
-  int roop = 2.65*(CS_sum/65.8)*12.*2.*24.;// 2.65(Al 200 mg/cm2, Eff 0.5) [counts/hour] * CS factor(Mg26xLs) * 14.5 [PAC days] * 2 [day/PAC day] * 24 [hours/day]
+  int roop = 2.65*(CS_sum/65.8)*2.*2.*24.*0.5;// 2.65(Al 200 mg/cm2, Eff 0.5) [counts/hour] * CS factor(Mg26xLs) * 14.5 [PAC days] * 2 [day/PAC day] * 24 [hours/day]
   //int QF   = roop * 0.;  // (50) 2.0% sticking
   //int Acc  = roop * 0.; // 37    3.7
   //int QF   = roop * 50.;  // (50) 2.0% sticking
@@ -533,7 +530,7 @@ cout<<"CS_sum = "<<CS_sum<<" [nb/sr]"<<endl;
 cout<<"Kaon Rate = "<<rate_k<<" [Hz]"<<endl;
 cout<<"Accidnetal Rate = "<<rate_acc<<" [Hz]"<<endl;
   //int Acc  = roop * (rate_acc/6.1E-3); //okuyama
-  int Acc  = rate_acc * 12. * 2. * 24. * 3600. * 2.;//Acc. rate [Hz] * 14.5 [PAC day] * 2 [day/PAC day] * 24 [hour/day] * 3600 [sec/hour] * (real factor)
+  int Acc  = rate_acc * 2. * 2. * 24. * 3600. * 1.;//Acc. rate [Hz] * 14.5 [PAC day] * 2 [day/PAC day] * 24 [hour/day] * 3600 [sec/hour] * (real factor)
 cout<<"Acc = "<<Acc<<endl;
   //int Acc  = roop * 1.0; // 37    3.7
   //int Acc  = 4170; //akiyama
@@ -702,20 +699,8 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
 		 break; }
     }
 #endif
-#ifdef Eloss_e_gas
-	dE2 = 0.;
-    while(Z>thick/2.){//rear hit
-      y = gRandom->Uniform(0,y_max);
-      dE2 = gRandom->Uniform(0,3.);//0-1 MeV
-      yy = dEdx_inside(dE2,20.,Me,P1);
-      if(y<yy&&yy<y_max)break;
-    }
-	if(dE2>0.)h1_gasdEe->Fill(dE2);
-#endif
     E1    -= dE;//cell
-    E1    -= dE2;//gas
     E1    += 0.311;//energy correction //empty
-    if(Z>thick/2.)E1 += 0.1061;//energy correction //gas
     E1    += gRandom->Gaus(0,E_beam*Ereso_beam);
     P1     = E2p(E1,M1);
     Theta1 = 0.;
@@ -735,45 +720,22 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
       y = gRandom->Uniform(0,y_max);
       //dE = gRandom->Uniform(0,(thick-Z)*5.);
       dE = gRandom->Uniform(0,3.);
-	  if(Z<thick/2.){//react at front cell
-		yy = dEdx(dE,(thick/2.-Z)/cos(Theta3)+thick/2.,Me,P3);
-	  }else{//react at rear cell
-		yy = dEdx(dE,(thick-Z)/cos(Theta3),Me,P3);
-	  }
+	  yy = dEdx(dE,(thick-Z)/cos(Theta3),Me,P3);
       if(y<yy){
 		 //cout<<Form("ep %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
 		 break; }
     }
 #endif
-#ifdef Eloss_ep_gas
-	dE2 = 0.;
-    while(Z<thick/2.){//front hit
-      y = gRandom->Uniform(0,y_max);
-      dE2 = gRandom->Uniform(0,3.);//0-1 MeV
-      yy = dEdx_inside(dE2,20./cos(Theta3),Me,P3);
-      if(y<yy&&yy<y_max)break;
-    }
-	if(dE2>0.)h1_gasdEep->Fill(dE2);
-#endif
     P3     += gRandom->Gaus(0,P_scat*Preso_scat);
     E3      = p2E(M3,P3);
     E3     += dE;//cell
-    E3     += dE2;//gas
     E3     -= 0.332;//energy correction //empty
-    if(Z<thick/2.)E3 -= 1.053;//energy correction //gas
     P3      = E2p(E3,M3);
     Theta3 += gRandom->Gaus(1E-3,Thetareso_scat);
     Phi3   += gRandom->Gaus(0,Phireso_scat);
     p3.SetMagThetaPhi(P3,Theta3,Phi3);
     lp3.SetVect(p3);
     lp3.SetE(E3);
-	if(Z<thick/2.){
-		h1_dEep->Fill(dE);
-		h2_dEep->Fill(Theta3,dE);
-	}else{
-		h1_2dEep->Fill(dE);
-		h2_2dEep->Fill(Theta3,dE);
-	}
 
 #ifdef Eloss_k_cell
 	dE = 0.;
@@ -781,55 +743,29 @@ if(n%500==0){cout<<n<<"/"<<roop<<endl;}
       y = gRandom->Uniform(0,y_max);
       //dE = gRandom->Uniform(0,(thick-Z)*5.);
       dE = gRandom->Uniform(0,3.);
-	  if(Z<thick/2.){//react at front cell
-		yy = dEdx(dE,(thick/2.-Z)/cos(Theta5)+thick/2.,MK,P5);
-	  }else{//react at rear cell
-		yy = dEdx(dE,(thick-Z)/cos(Theta3),MK,P5);
-	  }
+      yy = dEdx(dE,(thick-Z)/cos(Theta3),MK,P5);
       if(y<yy){ 
 	//	cout<<Form("K+ %04d  dE, yy:  %.3lf  %.1lf",n,dE,yy)<<endl;
 		 break; }
     }
 #endif
-#ifdef Eloss_k_gas
-	dE2 = 0.;
-    while(Z<thick/2.){//front hit
-      y = gRandom->Uniform(0,y_max);
-      dE2 = gRandom->Uniform(0,3.);//0-1 MeV
-      yy = dEdx_inside(dE2,20./cos(Theta5),MK,P5);
-      if(y<yy&&yy<y_max)break;
-    }
-	if(dE2>0.)h1_gasdEk->Fill(dE2);
-#endif
     P5     += gRandom->Gaus(0,P5*Preso_K);
     E5      = p2E(M5,P5);
     E5     += dE;//cell
-    E5     += dE2;//gas
     E5     -= 0.187;//energy correction //empty
-    if(Z<thick/2.)E5 -= 0.8434;//energy correction //gas
     P5      = E2p(E5,M5);
     Theta5 += gRandom->Gaus(0,Thetareso_K);
     Phi5   += gRandom->Gaus(0,Phireso_K);
     p5.SetMagThetaPhi(P5,Theta5,Phi5);
     lp5.SetVect(p5);
     lp5.SetE(E5);
-	if(Z<thick/2.){
-		h1_dEk->Fill(dE);
-		h2_dEk->Fill(Theta5,dE);
-	}else{
-		h1_2dEk->Fill(dE);
-		h2_2dEk->Fill(Theta5,dE);
-	}
 
     TLorentzVector lp;
     lp = lp1 + lp2 - lp3 - lp5;
 
     double mass = lp.M() - M_hyper;
 	mass += -16.3+16.6807;//more energy correction //empty
-	mass += -16.3+16.3556;//more energy correction //gas
-	mass += -16.3+17.2270;//more //final
-	mass += -16.3+16.7021;
-	mass += -0.1;
+	mass += -16.3+15.0807;//more energy correction //empty
 
     h1_mm_p->Fill(mass);
 
@@ -1035,7 +971,8 @@ cout<<"Energy Loss"<<endl;
 		}else{ftot_core_result ->SetParameter(3*i,CS[i]*factor_p3);}
 		ftot_core_result ->SetParLimits(3*i,0.,fs->GetParameter(0));
 		ftot_core_result ->FixParameter(3*i+1,Ex[i]);
-		ftot_core_result ->FixParameter(3*i+2,fs->GetParameter(2));
+		//ftot_core_result ->FixParameter(3*i+2,fs->GetParameter(2));
+		ftot_core_result ->FixParameter(3*i+2,1.2/2.35);
 	}
 		ftot_core_result ->SetParameter(60,f_acc->GetParameter(0));
 		ftot_core_result ->SetParameter(61,f_qf->GetParameter(0));
@@ -1087,18 +1024,6 @@ cout<<"Energy Loss"<<endl;
 
   file_new->Write();
   cout<<"Print complete!"<<endl;
-  TCanvas *c10 = new TCanvas("c10","c10",800,600);
-  c10->Divide(2,2);
-  c10->cd(1);
-  h1_gasdEe->Draw("");
-  h1_gasdEe->Fit("gausn");
-  c10->cd(2);
-  h1_gasdEep->Draw("");
-  h1_gasdEep->Fit("gausn");
-  c10->cd(3);
-  h1_gasdEk->Draw("");
-  h1_gasdEk->Fit("gausn");
-
   theApp.Run();
   return 0;
 

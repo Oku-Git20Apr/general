@@ -25,7 +25,8 @@ h1->GetYaxis()->SetTitle("Binding Energy [MeV]");
 
 
 //Core States: Al27
-double Al27_gs = -17.57;//MeV
+//double Al27_gs = -17.57;//MeV
+double Al27_gs = -16.54;//MeV
 double Al27_core[5] = {0.00, 0.84, 1.01, 2.21, 2.73};//MeV
 TLine* lcore[5];
 	for(int i=0;i<5;i++){
@@ -34,15 +35,29 @@ TLine* lcore[5];
 		lcore[i]->SetLineWidth(2);
 		lcore[i]->Draw("same");
 	}
-//Al28L: E01-011
-double Al28L_exp[3] = {-17.57, -6.84, 1.82};//MeV
+////Al28L: E01-011 (A. Matsumura D-thesis)
+//double Al28L_exp[3] = {-17.57, -6.84, 1.82};//MeV
+//TLine* lhyp_exp[3];
+//	for(int i=0;i<3;i++){
+//		lhyp_exp[i] = new TLine(0.5,Al28L_exp[i],2.5,Al28L_exp[i]);
+//		lhyp_exp[i]->SetLineColor(kAzure);
+//		lhyp_exp[i]->SetLineWidth(4);
+//		lhyp_exp[i]->Draw("same");
+//	}
+//Al28L: E01-011 (S.N. Nakamura, HYP2015 Proceedings)
+double Al28L_exp[3] = {-16.54, -8.47, 1.94};//MeV
 TLine* lhyp_exp[3];
-	for(int i=0;i<3;i++){
+	for(int i=0;i<2;i++){
 		lhyp_exp[i] = new TLine(0.5,Al28L_exp[i],2.5,Al28L_exp[i]);
 		lhyp_exp[i]->SetLineColor(kAzure);
 		lhyp_exp[i]->SetLineWidth(4);
 		lhyp_exp[i]->Draw("same");
 	}
+		TLine *lhyp_exp_add = new TLine(0.5,-1.07,2.5,-1.07);//#3 peak?
+		lhyp_exp_add->SetLineColor(kAzure);
+		lhyp_exp_add->SetLineWidth(4);
+		lhyp_exp_add->SetLineStyle(2);
+		//lhyp_exp_add->Draw("same");
 //Al28L: Shell model calc.
 double Al28L_theo[5] = {-16.92, -8.60, -8.00, -0.29, 1.29};//MeV
 TLine* lhyp_theo[5];

@@ -9,20 +9,22 @@ double M, Z, A, I, K, rho, delta, C, Kend, step, interval, Wmax, energyloss, Ran
 
 
 
-cout<<"入射粒子が物質中で減速するときのenergy depositとRangeをBethe-Blochの式から計算します。\n"; 
-cout<<"入射粒子の質量[MeV/c^2]を入力してください:"; cin>>M;
-cout<<"物質の原子番号:"; cin>>Z;
-cout<<"物質の原子量:"; cin>>A;
-cout<<"イオン化エネルギー[eV]:"; cin>>I;
-I = I * pow(10.0,-6.0);
-cout<<"入射粒子の入射エネルギー[MeV]:"; cin>>K;
-cout<<"物質の密度[g/cm^3]:"; cin>>rho;
-cout<<"density correction:"; cin>>delta;
-cout<<"shell correction:"; cin>>C;
-cout<<"入射粒子の最終エネルギー[MeV]:"; cin>>Kend;
-cout<<"step数:"; cin>>step;
+//cout<<"入射粒子が物質中で減速するときのenergy depositとRangeをBethe-Blochの式から計算します。\n"; 
+//cout<<"入射粒子の質量[MeV/c^2]を入力してください:"; cin>>M;
+//cout<<"物質の原子番号:"; cin>>Z;
+//cout<<"物質の原子量:"; cin>>A;
+//cout<<"イオン化エネルギー[eV]:"; cin>>I;
+//I = I * pow(10.0,-6.0);
+//cout<<"入射粒子の入射エネルギー[MeV]:"; cin>>K;
+//cout<<"物質の密度[g/cm^3]:"; cin>>rho;
+//cout<<"density correction:"; cin>>delta;
+//cout<<"shell correction:"; cin>>C;
+//cout<<"入射粒子の最終エネルギー[MeV]:"; cin>>Kend;
+//cout<<"step数:"; cin>>step;
 
-//M=105.66;Z=82;A=208.2;K=750;rho=11.35;delta=0;C=0;Kend=0;step=15; //for example (incident particle:muon, material:Pb, 750->0[MeV])
+//M=105.66;Z=82;A=208.2;I=700E-6;K=750;rho=11.35;delta=0;C=0;Kend=0;step=15; //for example (incident particle:muon, material:Pb, 750->0[MeV])
+//M=me;Z=13.;A=27.;I=166E-6;K=4240;rho=2.7;delta=0;C=0;Kend=4230;step=10; //for example (incident particle:electron, material:Al, 4240->4239[MeV])
+M=me;Z=2.;A=3.;I=41.8E-6;K=4240;rho=0.0095;delta=0;C=0;Kend=4230;step=10; //for example (incident particle:electron, material:Al, 4240->4239[MeV])
 
 s = me/M;
 interval = (K-Kend)/step;

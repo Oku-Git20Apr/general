@@ -4,6 +4,11 @@
 //Description of triaxial deformed nuclei
 //with spherical harmonics
 //Aug. 11, 2021 
+//Sep. 11, 2021
+
+//#define l_1 //l=1 draw
+//#define l_2 //l=2 draw
+//#define l_3 //l=3 draw
 
 double fY00(double *var, double *par){
 	double x = var[0];
@@ -61,13 +66,15 @@ double fY22m(double *var, double *par){
 	return (x*x+y*y+z*z)-(15./(32.*4.*atan(1.)))*(x*x-y*y)*(x*x-y*y)/(x*x+y*y+z*z)/(x*x+y*y+z*z); 
 }
 double fR(double *var, double *par){
-	double x = var[0];
-	double y = var[1];
+	//double x = var[0];
+	//double y = var[1];
 	double z = var[2];
 	double beta = par[0];
 	double gamma = par[1];
 	double R0 = par[2];
 	double pi = 4.*atan(1.);
+	double x = var[0] * cos(pi/4.) - var[1] * sin(pi/4.);
+	double y = var[0] * cos(pi/4.) + var[1] * sin(pi/4.);
 	return (x*x+y*y+z*z)-sqrt(R0)*pow(1.+beta*cos(gamma)*sqrt(5./16./pi)*(-x*x-y*y+2.*z*z)/(x*x+y*y+z*z)+(1./sqrt(2.))*beta*sin(gamma)*sqrt(15./32./pi)*2.*x*y/(x*x+y*y+z*z),2.); 
 }
 
@@ -85,9 +92,12 @@ cout<<"PI="<<PI<<endl;
   TF3 *Y22p = new TF3("Y22p",fY22p,-0.5,0.5,-0.5,0.5,-0.5,0.5);
   TF3 *Y22m = new TF3("Y22m",fY22m,-0.5,0.5,-0.5,0.5,-0.5,0.5);
   TF3 *nuclei = new TF3("nuclei",fR,-0.5,0.5,-0.5,0.5,-0.5,0.5,3);
-  nuclei->SetParameter(0,1.);//beta
-  nuclei->SetParameter(1,PI/3.);//gamma
-  nuclei->SetParameter(2,0.01);//scale, R0
+  double beta = 0.5;
+  double gamma = PI/3.;
+  double R0 = 0.01;
+  nuclei->SetParameter(0,beta);
+  nuclei->SetParameter(1,gamma);
+  nuclei->SetParameter(2,R0);
   double x[2]={-0.75,0.75};
   double y[2]={-0.75,0.75};
   double z[2]={-0.75,0.75};
@@ -97,11 +107,66 @@ cout<<"PI="<<PI<<endl;
   TPolyLine3D *yaxis = new TPolyLine3D(2,null,y,null);
   TPolyLine3D *zaxis = new TPolyLine3D(2,null,null,z);
   TPolyLine3D *zaxis_long = new TPolyLine3D(2,null,null,z_long);
+
+////----------------------------//
+////Prolate: beta=0.5, gamma=0.0
+//  double xx[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)),2.))};
+//  double yy[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)),2.))};
+//  double zz[2]={-sqrt(sqrt(R0)*pow((1.+2.*beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.+2.*beta*sqrt(5./16./PI)),2.))};
+//  TPolyLine3D *xxaxis = new TPolyLine3D(2,xx,null,null);
+//  TPolyLine3D *yyaxis = new TPolyLine3D(2,null,yy,null);
+//  TPolyLine3D *zzaxis = new TPolyLine3D(2,null,null,zz);
+//  xxaxis->SetLineWidth(3);
+//  yyaxis->SetLineWidth(3);
+//  zzaxis->SetLineWidth(3);
+////Long(red), Short(Green), Middle(Orange)
+//  xxaxis->SetLineColor(kRed);
+//  yyaxis->SetLineColor(kGreen);
+//  zzaxis->SetLineColor(kRed);
+////----------------------------//
+
+////----------------------------//
+////Oblate: beta=0.5, gamma=60 deg
+////  double xx[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.))};
+//  double xx[2]={-sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.))};
+//  double yy[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.))};
+//  double zz[2]={-sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.))};
+//  TPolyLine3D *xxaxis = new TPolyLine3D(2,xx,null,null);
+//  TPolyLine3D *yyaxis = new TPolyLine3D(2,null,yy,null);
+//  TPolyLine3D *zzaxis = new TPolyLine3D(2,null,null,zz);
+//  xxaxis->SetLineWidth(3);
+//  yyaxis->SetLineWidth(3);
+//  zzaxis->SetLineWidth(3);
+////Long(red), Short(Green), Middle(Orange)
+//  xxaxis->SetLineColor(kRed);
+//  yyaxis->SetLineColor(kGreen);
+//  zzaxis->SetLineColor(kRed);
+////----------------------------//
+
+//----------------------------//
+//Triaxial: beta=0.5, gamma=30 deg
+//  double xx[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.))};
+  double xx[2]={-sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.))*0.8,sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.))*0.8};
+  double yy[2]={-sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.)),sqrt(sqrt(R0)*pow((1.-beta*sqrt(5./16./PI)/2.),2.))};
+  double zz[2]={-sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.)),sqrt(sqrt(R0)*pow((1.+beta*sqrt(5./16./PI)),2.))};
+  TPolyLine3D *xxaxis = new TPolyLine3D(2,xx,null,null);
+  TPolyLine3D *yyaxis = new TPolyLine3D(2,null,yy,null);
+  TPolyLine3D *zzaxis = new TPolyLine3D(2,null,null,zz);
+  xxaxis->SetLineWidth(3);
+  yyaxis->SetLineWidth(3);
+  zzaxis->SetLineWidth(3);
+//Long(red), Short(Green), Middle(Orange)
+  xxaxis->SetLineColor(kOrange);
+  yyaxis->SetLineColor(kGreen);
+  zzaxis->SetLineColor(kRed);
+//----------------------------//
+
+
   gStyle->SetOptStat(0);
   gStyle->SetTitleFontSize(0.1);
 
 
-
+#ifdef l_0
   TCanvas *c1 = new TCanvas("c1","c1",600,600);
   TH3D *frame_y00 = new TH3D("frame_y00","Y_{0}^{0}",100,-0.5,0.5,100.,-0.5,0.5,100.,-0.5,0.5);
   frame_y00->SetAxisColor(10,"XYZ");
@@ -114,6 +179,9 @@ cout<<"PI="<<PI<<endl;
   yaxis->Draw("FBBBsame");
   zaxis->Draw("FBBBsame");
   TCanvas *c2 = new TCanvas("c2","c2",1200,600);
+#endif
+
+#ifdef l_1
   c2->Divide(3,1);
   c2->cd(1);
   TH3D *frame_y10 = new TH3D("frame_y10","Y_{1}^{ 0}",100,-0.5,0.5,100.,-0.5,0.5,100.,-0.5,0.5);
@@ -148,6 +216,9 @@ cout<<"PI="<<PI<<endl;
   xaxis->Draw("FBBBsame");
   yaxis->Draw("FBBBsame");
   zaxis->Draw("FBBBsame");
+#endif
+
+#ifdef l_3
   TCanvas *c3 = new TCanvas("c3","c3",2000,600);
   c3->Divide(5,1);
   c3->cd(1);
@@ -205,9 +276,10 @@ cout<<"PI="<<PI<<endl;
   xaxis->Draw("FBBBsame");
   yaxis->Draw("FBBBsame");
   zaxis->Draw("FBBBsame");
+#endif
 
   TCanvas *c4 = new TCanvas("c4","c4",800,800);
-  TH3D *frame_nuclei = new TH3D("frame_nuclei","#beta=0.5, #gamma=#pi/4",100,-0.5,0.5,100.,-0.5,0.5,100.,-0.5,0.5);
+  TH3D *frame_nuclei = new TH3D("frame_nuclei",Form("#beta=%2.1lf, #gamma=%2.1lf",beta,gamma),100,-0.5,0.5,100.,-0.5,0.5,100.,-0.5,0.5);
   frame_nuclei->SetAxisColor(10,"XYZ");
   frame_nuclei->SetLabelColor(10,"XYZ");
   frame_nuclei->Draw("FBBB");
@@ -217,9 +289,13 @@ cout<<"PI="<<PI<<endl;
   xaxis->Draw("FBBBsame");
   yaxis->Draw("FBBBsame");
   zaxis->Draw("FBBBsame");
+  xxaxis->Draw("FBBBsame");
+  yyaxis->Draw("FBBBsame");
+  zzaxis->Draw("FBBBsame");
 
 //c1->Print("pdf/Y_0.pdf");
 //c2->Print("pdf/Y_1.pdf");
 //c3->Print("pdf/Y_2.pdf");
+c4->Print("pdf/deform3.pdf");
 
 }

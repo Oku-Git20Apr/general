@@ -61,3 +61,12 @@
 
 *W_Eg.C
 -W vs E_gamma (for electro-production)
+
+*energylevel.C
+-Draw level diagram of binding energy
+
+*nnL_mm_resol.C
+*next_mm_resol.C
+*e05_mm_resol.C
+-Calc. of missing mass resolution from mom. and angular resolution
+-nnL(E12-17-003),next(E12-15-008),e05(E05-115) setup
